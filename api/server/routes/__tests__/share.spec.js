@@ -24,19 +24,21 @@ jest.mock('@librechat/data-schemas', () => ({
   createTempChatExpirationDate: jest.fn(() => new Date('2030-01-01T00:00:00.000Z')),
 }));
 
-jest.mock('librechat-data-provider', () => ({
-  PermissionTypes: {
-    SHARED_LINKS: 'SHARED_LINKS',
-  },
-  Permissions: {
-    CREATE: 'CREATE',
-    SHARE_PUBLIC: 'SHARE_PUBLIC',
-  },
-  RetentionMode: {
-    ALL: 'all',
-    TEMPORARY: 'temporary',
-  },
-}));
+jest.mock('librechat-data-provider', () => {
+  const RetentionMode = { ALL: 'all', TEMPORARY: 'temporary', EPHEMERAL: 'ephemeral' };
+  return {
+    PermissionTypes: {
+      SHARED_LINKS: 'SHARED_LINKS',
+    },
+    Permissions: {
+      CREATE: 'CREATE',
+      SHARE_PUBLIC: 'SHARE_PUBLIC',
+    },
+    RetentionMode,
+    isAllDataRetention: (mode) => mode === RetentionMode.ALL || mode === RetentionMode.EPHEMERAL,
+    isForcedTemporaryRetention: (mode) => mode === RetentionMode.EPHEMERAL,
+  };
+});
 
 jest.mock('mongoose', () => ({
   models: {
