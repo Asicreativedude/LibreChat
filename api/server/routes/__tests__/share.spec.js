@@ -64,6 +64,7 @@ jest.mock('~/models', () => ({
 jest.mock('~/server/middleware/canAccessSharedLink', () => (_req, _res, next) => next());
 jest.mock('~/server/middleware/optionalJwtAuth', () => (req, _res, next) => next());
 jest.mock('~/server/middleware/requireJwtAuth', () => (req, res, next) => next());
+jest.mock('~/server/middleware/config/app', () => (req, _res, next) => next());
 
 const { RetentionMode } = require('librechat-data-provider');
 const { createTempChatExpirationDate, logger } = require('@librechat/data-schemas');
