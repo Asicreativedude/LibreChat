@@ -450,6 +450,38 @@ describe('forkSharedConversation', () => {
     const savedMessages = bulkSaveMessages.mock.calls[0][0];
     expect(savedMessages[0].model).not.toBe('a_anon123');
   });
+
+  test('should strip file_id from cloned files and attachments', async () => {
+    getSharedMessages.mockResolvedValue({
+      ...mockShare,
+      messages: [
+        {
+          messageId: 'msg_a',
+          parentMessageId: Constants.NO_PARENT,
+          text: 'Message with files',
+          isCreatedByUser: true,
+          createdAt: '2021-01-01',
+          files: [{ file_id: 'owner-file-1', filepath: '/images/owner/a.png' }],
+          attachments: [
+            { file_id: 'owner-file-2', toolCallId: 'tool_1', filepath: '/images/owner/b.png' },
+          ],
+        },
+      ],
+    });
+
+    await forkSharedConversation({
+      shareId: 'share123',
+      requestUserId: 'user1',
+    });
+
+    const savedMessages = bulkSaveMessages.mock.calls[0][0];
+    const [message] = savedMessages;
+    expect(message.files[0]).not.toHaveProperty('file_id');
+    expect(message.attachments[0]).not.toHaveProperty('file_id');
+    // Render-only metadata is preserved
+    expect(message.files[0].filepath).toBe('/images/owner/a.png');
+    expect(message.attachments[0].toolCallId).toBe('tool_1');
+  });
 });
 
 const mockMessagesComplex = [

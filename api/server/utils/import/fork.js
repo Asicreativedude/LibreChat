@@ -1,10 +1,10 @@
 const { v4: uuidv4 } = require('uuid');
 const { logger } = require('@librechat/data-schemas');
 const { EModelEndpoint, Constants, ForkOptions } = require('librechat-data-provider');
-const { createImportBatchBuilder } = require('./importBatchBuilder');
 const { getConvo, getMessages, getSharedMessages } = require('~/models');
-const BaseClient = require('~/app/clients/BaseClient');
+const { createImportBatchBuilder } = require('./importBatchBuilder');
 const { resolveImportDefaultModel } = require('./defaults');
+const BaseClient = require('~/app/clients/BaseClient');
 
 /**
  * Helper function to clone messages with proper parent-child relationships and timestamps
@@ -354,6 +354,31 @@ function splitAtTargetLevel(messages, targetMessageId) {
 }
 
 /**
+ * Strips file identifiers from a shared message's `files` and `attachments`.
+ * A shared fork is owned by the requesting user, but the underlying file records
+ * still belong to the original sharer. Persisting their `file_id`s would let the
+ * agents file-resend path collect them on the next turn and call `getUserCodeFiles`,
+ * which looks them up by `file_id` with no ownership filter, rehydrating the
+ * sharer's files into the viewer's run. Dropping the ids keeps a fork's file
+ * access no broader than viewing the read-only share, while leaving render-only
+ * metadata (e.g. `filepath`, `toolCallId`) intact.
+ * @param {TMessage} message - The shared message to sanitize.
+ * @returns {TMessage} The message with file identifiers removed.
+ */
+function stripSharedFileIds(message) {
+  const sanitized = { ...message };
+  if (Array.isArray(sanitized.files)) {
+    sanitized.files = sanitized.files.map(({ file_id: _fileId, ...file }) => file);
+  }
+  if (Array.isArray(sanitized.attachments)) {
+    sanitized.attachments = sanitized.attachments.map(
+      ({ file_id: _fileId, ...attachment }) => attachment,
+    );
+  }
+  return sanitized;
+}
+
+/**
  * Forks a shared (sanitized) conversation into a fresh conversation owned by the requesting user.
  * Only the anonymized, allowlisted message fields returned by `getSharedMessages` are cloned,
  * so no private data from the original owner can leak into the new conversation.
@@ -381,13 +406,15 @@ async function forkSharedConversation({
   importBatchBuilder.startConversation(EModelEndpoint.openAI);
 
   const messageIds = new Set(share.messages.map((message) => message.messageId));
-  const messagesToClone = share.messages.map(({ model: _model, ...message }) => ({
-    ...message,
-    parentMessageId:
-      message.parentMessageId != null && messageIds.has(message.parentMessageId)
-        ? message.parentMessageId
-        : Constants.NO_PARENT,
-  }));
+  const messagesToClone = share.messages.map(({ model: _model, ...message }) =>
+    stripSharedFileIds({
+      ...message,
+      parentMessageId:
+        message.parentMessageId != null && messageIds.has(message.parentMessageId)
+          ? message.parentMessageId
+          : Constants.NO_PARENT,
+    }),
+  );
 
   cloneMessagesWithTimestamps(messagesToClone, importBatchBuilder);
 
