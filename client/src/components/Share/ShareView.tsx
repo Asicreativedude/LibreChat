@@ -17,7 +17,7 @@ import {
   OGDialogTrigger,
   useToastContext,
 } from '@librechat/client';
-import { ThemeSelector, LangSelector } from '~/components/Nav/SettingsTabs/General/General';
+import { ThemeSelector, LangSelector } from '~/components/Nav/SettingsTabs/General/Selectors';
 import { useGetStartupConfig, useForkSharedConvoMutation } from '~/data-provider';
 import { ShareMessagesProvider } from './ShareMessagesProvider';
 import { ShareArtifactsContainer } from './ShareArtifacts';

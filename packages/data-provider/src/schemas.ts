@@ -79,6 +79,33 @@ export const isOpenAILikeProvider = (provider?: string | null): boolean => {
   return openAILikeProviders.has(provider ?? '');
 };
 
+/**
+ * Providers whose `usage_metadata.input_tokens` ALREADY INCLUDES cached tokens
+ * (`input_token_details.cache_*` is a subset, not an additional charge):
+ * Google/Vertex (`promptTokenCount`), OpenAI/Azure (`prompt_tokens`), and the
+ * OpenAI-compatible family. `@librechat/agents`' `getAnthropicUsageMetadata`
+ * folds `cache_creation` + `cache_read` into `input_tokens`, so Anthropic is a
+ * subset provider too; without this the cache portion is billed twice. Bedrock
+ * stays additive — its Converse path passes AWS `inputTokens` through unmodified.
+ * Single source of truth shared by the backend billing path
+ * (`packages/api/src/agents/usage.ts`) and the client usage normalization.
+ */
+export const cacheSubsetProviders = new Set<string>([
+  Providers.OPENAI,
+  Providers.AZURE,
+  Providers.GOOGLE,
+  Providers.VERTEXAI,
+  Providers.XAI,
+  Providers.DEEPSEEK,
+  Providers.OPENROUTER,
+  Providers.MOONSHOT,
+  Providers.ANTHROPIC,
+]);
+
+export const inputTokensIncludesCache = (provider?: string | null): boolean => {
+  return cacheSubsetProviders.has(provider ?? '');
+};
+
 export const isDocumentSupportedProvider = (provider?: string | null): boolean => {
   return documentSupportedProviders.has(provider ?? '');
 };
@@ -493,6 +520,9 @@ export const anthropicSettings = {
   promptCache: {
     default: true as const,
   },
+  promptCacheTtl: {
+    default: undefined,
+  },
   thinking: {
     default: true as const,
   },
@@ -748,6 +778,8 @@ export const tMessageSchema = z.object({
   feedback: feedbackSchema.optional(),
   /** metadata */
   metadata: z.record(z.unknown()).optional(),
+  /** Output tokens for assistant messages, calibrated prompt-side estimate for user messages */
+  tokenCount: z.number().optional(),
   contextMeta: z
     .object({
       calibrationRatio: z
@@ -859,6 +891,7 @@ export const tConversationSchema = z.object({
   endpoint: eModelEndpointSchema.nullable(),
   endpointType: eModelEndpointSchema.nullable().optional(),
   isArchived: z.boolean().optional(),
+  pinned: z.boolean().optional(),
   title: z.string().nullable().or(z.literal('New Chat')).default('New Chat'),
   user: z.string().optional(),
   messages: z.array(z.string()).optional(),
@@ -879,6 +912,7 @@ export const tConversationSchema = z.object({
   max_tokens: coerceNumber.optional(),
   /* Anthropic */
   promptCache: z.boolean().optional(),
+  promptCacheTtl: z.enum(['5m', '1h']).optional(),
   system: z.string().optional(),
   thinking: z.boolean().optional(),
   thinkingBudget: coerceNumber.optional(),
@@ -1032,6 +1066,7 @@ export const tQueryParamsSchema = tConversationSchema
     maxOutputTokens: true,
     /** @endpoints anthropic */
     promptCache: true,
+    promptCacheTtl: true,
     thinking: true,
     thinkingBudget: true,
     thinkingLevel: true,
@@ -1338,7 +1373,7 @@ export const openAISchema = openAIBaseSchema
   .catch(() => ({}));
 
 export const openRouterSchema = openAIBaseSchema
-  .merge(tConversationSchema.pick({ promptCache: true }))
+  .merge(tConversationSchema.pick({ promptCache: true, promptCacheTtl: true }))
   .transform((obj: Partial<TConversation>) => removeNullishValues(obj, true))
   .catch(() => ({}));
 
@@ -1373,6 +1408,7 @@ export const anthropicBaseSchema = tConversationSchema.pick({
   topK: true,
   resendFiles: true,
   promptCache: true,
+  promptCacheTtl: true,
   thinking: true,
   thinkingBudget: true,
   effort: true,
