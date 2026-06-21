@@ -482,6 +482,20 @@ describe('forkSharedConversation', () => {
     expect(message.files[0].filepath).toBe('/images/owner/a.png');
     expect(message.attachments[0].toolCallId).toBe('tool_1');
   });
+
+  test('should pass interfaceConfig to the builder so retention is honored', async () => {
+    const interfaceConfig = { retentionMode: 'all', retention: { days: 30 } };
+    const builderFactory = jest.fn((userId, config) => createImportBatchBuilder(userId, config));
+
+    await forkSharedConversation({
+      shareId: 'share123',
+      requestUserId: 'user1',
+      interfaceConfig,
+      builderFactory,
+    });
+
+    expect(builderFactory).toHaveBeenCalledWith('user1', interfaceConfig);
+  });
 });
 
 const mockMessagesComplex = [

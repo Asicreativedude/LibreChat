@@ -387,7 +387,8 @@ function stripSharedFileIds(message) {
  * @param {string} [params.shareResourceId] - The SharedLink resource ID set by `canAccessSharedLink`.
  * @param {string} params.requestUserId - The ID of the user making the request.
  * @param {string} [params.userRole] - The role of the requesting user, used to resolve the default model.
- * @param {(userId: string) => ImportBatchBuilder} [params.builderFactory] - Optional factory function for creating an ImportBatchBuilder instance.
+ * @param {object} [params.interfaceConfig] - Runtime interface config so the fork honors data retention (e.g. `expiredAt` under all-data retention), matching the import path.
+ * @param {(userId: string, interfaceConfig?: object) => ImportBatchBuilder} [params.builderFactory] - Optional factory function for creating an ImportBatchBuilder instance.
  * @returns {Promise<TForkConvoResponse | null>} The new conversation and messages, or null when the share is missing or empty.
  */
 async function forkSharedConversation({
@@ -395,6 +396,7 @@ async function forkSharedConversation({
   shareResourceId,
   requestUserId,
   userRole,
+  interfaceConfig,
   builderFactory = createImportBatchBuilder,
 }) {
   const share = await getSharedMessages(shareId, shareResourceId);
@@ -402,7 +404,7 @@ async function forkSharedConversation({
     return null;
   }
 
-  const importBatchBuilder = builderFactory(requestUserId);
+  const importBatchBuilder = builderFactory(requestUserId, interfaceConfig);
   importBatchBuilder.startConversation(EModelEndpoint.openAI);
 
   const messageIds = new Set(share.messages.map((message) => message.messageId));

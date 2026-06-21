@@ -77,6 +77,8 @@ jest.mock('~/server/utils/import/fork', () => ({
   forkSharedConversation: jest.fn(),
 }));
 
+jest.mock('~/server/middleware/config/app', () => (_req, _res, next) => next());
+
 const { RetentionMode } = require('librechat-data-provider');
 const { createTempChatExpirationDate, logger } = require('@librechat/data-schemas');
 const { deleteSharedLinkWithCleanup } = require('@librechat/api');
@@ -364,6 +366,7 @@ describe('share fork route', () => {
       shareResourceId: 'resource-123',
       requestUserId: 'user-123',
       userRole: undefined,
+      interfaceConfig: { retentionMode: 'temporary' },
     });
   });
 

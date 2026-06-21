@@ -25,6 +25,7 @@ const { forkSharedConversation } = require('~/server/utils/import/fork');
 const { createForkLimiters } = require('~/server/middleware/limiters');
 const optionalJwtAuth = require('~/server/middleware/optionalJwtAuth');
 const requireJwtAuth = require('~/server/middleware/requireJwtAuth');
+const configMiddleware = require('~/server/middleware/config/app');
 const router = express.Router();
 
 const checkSharedLinksAccess = generateCheckAccess({
@@ -79,6 +80,7 @@ if (allowSharedLinks) {
     forkIpLimiter,
     forkUserLimiter,
     canAccessSharedLink,
+    configMiddleware,
     async (req, res) => {
       try {
         const result = await forkSharedConversation({
@@ -86,6 +88,7 @@ if (allowSharedLinks) {
           shareResourceId: req.shareResourceId,
           requestUserId: req.user.id,
           userRole: req.user.role,
+          interfaceConfig: req.config?.interfaceConfig,
         });
         if (!result) {
           return res.status(404).json({ message: 'Shared conversation not found' });

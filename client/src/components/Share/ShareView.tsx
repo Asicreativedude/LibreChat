@@ -46,11 +46,18 @@ function SharedView() {
       navigate(`/c/${forkData.conversation.conversationId}`);
     },
     onError: (error) => {
-      const isRateLimitError = getResponseStatus(error) === 429;
+      const status = getResponseStatus(error);
+      /** A 401 means the viewer isn't authenticated; the request interceptor
+       *  routes them through login (with a redirect back to this share), so a
+       *  generic error toast would be misleading noise before the redirect. */
+      if (status === 401) {
+        return;
+      }
       showToast({
-        message: isRateLimitError
-          ? localize('com_ui_fork_error_rate_limit')
-          : localize('com_ui_continue_chat_error'),
+        message:
+          status === 429
+            ? localize('com_ui_fork_error_rate_limit')
+            : localize('com_ui_continue_chat_error'),
         status: 'error',
       });
     },
