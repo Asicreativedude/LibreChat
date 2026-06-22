@@ -98,11 +98,11 @@ const lean = (value) => ({
   lean: jest.fn().mockResolvedValue(value),
 });
 
-const buildApp = ({ retentionMode = RetentionMode.TEMPORARY } = {}) => {
+const buildApp = ({ retentionMode = RetentionMode.TEMPORARY, user = { id: 'user-123' } } = {}) => {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    req.user = { id: 'user-123' };
+    req.user = user;
     req.config = { interfaceConfig: { retentionMode } };
     next();
   });
@@ -357,7 +357,9 @@ describe('share fork route', () => {
     };
     forkSharedConversation.mockResolvedValue(forkResult);
 
-    const response = await request(buildApp())
+    const response = await request(
+      buildApp({ user: { id: 'user-123', role: 'USER', tenantId: 'tenant-viewer' } }),
+    )
       .post('/api/share/share-123/fork')
       .send({ targetMessageIndex: 3 });
 
@@ -367,7 +369,8 @@ describe('share fork route', () => {
       shareId: 'share-123',
       shareResourceId: 'resource-123',
       requestUserId: 'user-123',
-      userRole: undefined,
+      userRole: 'USER',
+      userTenantId: 'tenant-viewer',
       targetMessageIndex: 3,
       interfaceConfig: { retentionMode: 'temporary' },
     });

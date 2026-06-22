@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const { logger } = require('@librechat/data-schemas');
+const { logger, tenantStorage } = require('@librechat/data-schemas');
 const { EModelEndpoint, Constants, ForkOptions } = require('librechat-data-provider');
 const { getConvo, getMessages, getSharedMessages } = require('~/models');
 const { createImportBatchBuilder } = require('./importBatchBuilder');
@@ -387,6 +387,7 @@ function stripSharedFileIds(message) {
  * @param {string} [params.shareResourceId] - The SharedLink resource ID set by `canAccessSharedLink`.
  * @param {string} params.requestUserId - The ID of the user making the request.
  * @param {string} [params.userRole] - The role of the requesting user, used to resolve the default model.
+ * @param {string} [params.userTenantId] - Tenant of the requesting user. `canAccessSharedLink` runs this handler under the share owner's tenant so the share resolves, so the copy must be persisted under the requesting user's tenant or it would be invisible (404) when they open it normally.
  * @param {number} [params.targetMessageIndex] - Index, within the shared payload, of the message at the tip of the branch the viewer has active. When set, only the direct path to that message is cloned so the fork continues the branch that was actually shown rather than the newest sibling. An index is used (not id or `createdAt`) because shared ids are re-anonymized per request while `getSharedMessages` returns a deterministic, stable order, so the same index resolves to the same message on the server.
  * @param {object} [params.interfaceConfig] - Runtime interface config so the fork honors data retention (e.g. `expiredAt` under all-data retention), matching the import path.
  * @param {(userId: string, interfaceConfig?: object) => ImportBatchBuilder} [params.builderFactory] - Optional factory function for creating an ImportBatchBuilder instance.
@@ -397,6 +398,7 @@ async function forkSharedConversation({
   shareResourceId,
   requestUserId,
   userRole,
+  userTenantId,
   targetMessageIndex,
   interfaceConfig,
   builderFactory = createImportBatchBuilder,
@@ -405,9 +407,6 @@ async function forkSharedConversation({
   if (!share?.messages?.length) {
     return null;
   }
-
-  const importBatchBuilder = builderFactory(requestUserId, interfaceConfig);
-  importBatchBuilder.startConversation(EModelEndpoint.openAI);
 
   /**
    * The shared payload includes sibling branches. Reduce to the direct path of
@@ -445,29 +444,42 @@ async function forkSharedConversation({
     }),
   );
 
-  cloneMessagesWithTimestamps(messagesToClone, importBatchBuilder);
+  /**
+   * Persist and read back under the requesting user's tenant rather than the
+   * share owner's. The read above runs in the share owner's tenant (set by
+   * `canAccessSharedLink`); writing the copy there would leave it invisible to
+   * the user under their normal tenant context (the new conversation would 404
+   * when they navigate to it). Switching to the user's tenant only affects this
+   * deployment when tenant isolation is enabled; otherwise it is a no-op.
+   */
+  return tenantStorage.run({ tenantId: userTenantId, userId: requestUserId }, async () => {
+    const importBatchBuilder = builderFactory(requestUserId, interfaceConfig);
+    importBatchBuilder.startConversation(EModelEndpoint.openAI);
 
-  const defaultModel = await resolveImportDefaultModel({
-    endpoint: EModelEndpoint.openAI,
-    requestUserId,
-    userRole,
+    cloneMessagesWithTimestamps(messagesToClone, importBatchBuilder);
+
+    const defaultModel = await resolveImportDefaultModel({
+      endpoint: EModelEndpoint.openAI,
+      requestUserId,
+      userRole,
+    });
+    const result = importBatchBuilder.finishConversation(share.title, new Date(), {}, defaultModel);
+    await importBatchBuilder.saveBatch();
+    logger.debug(
+      `user: ${requestUserId} | New conversation "${result.conversation.title}" forked from share ID ${shareId}`,
+    );
+
+    const conversation = await getConvo(requestUserId, result.conversation.conversationId);
+    const messages = await getMessages({
+      user: requestUserId,
+      conversationId: conversation.conversationId,
+    });
+
+    return {
+      conversation,
+      messages,
+    };
   });
-  const result = importBatchBuilder.finishConversation(share.title, new Date(), {}, defaultModel);
-  await importBatchBuilder.saveBatch();
-  logger.debug(
-    `user: ${requestUserId} | New conversation "${result.conversation.title}" forked from share ID ${shareId}`,
-  );
-
-  const conversation = await getConvo(requestUserId, result.conversation.conversationId);
-  const messages = await getMessages({
-    user: requestUserId,
-    conversationId: conversation.conversationId,
-  });
-
-  return {
-    conversation,
-    messages,
-  };
 }
 
 /**

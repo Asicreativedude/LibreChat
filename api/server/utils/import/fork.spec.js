@@ -580,6 +580,26 @@ describe('forkSharedConversation', () => {
 
     expect(bulkSaveMessages.mock.calls[0][0]).toHaveLength(mockSharedMessages.length);
   });
+
+  test('should persist under the requesting user tenant, not the share tenant', async () => {
+    const { tenantStorage, getTenantId } = require('@librechat/data-schemas');
+    let tenantDuringSave;
+    bulkSaveConvos.mockImplementation(async () => {
+      tenantDuringSave = getTenantId();
+    });
+
+    // Simulate the handler running inside the share owner's tenant context
+    // (as `canAccessSharedLink` does) and ensure the write switches to the viewer's.
+    await tenantStorage.run({ tenantId: 'tenant-share-owner' }, () =>
+      forkSharedConversation({
+        shareId: 'share123',
+        requestUserId: 'user1',
+        userTenantId: 'tenant-viewer',
+      }),
+    );
+
+    expect(tenantDuringSave).toBe('tenant-viewer');
+  });
 });
 
 const mockMessagesComplex = [

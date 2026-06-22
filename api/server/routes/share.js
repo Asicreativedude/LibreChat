@@ -88,6 +88,7 @@ if (allowSharedLinks) {
           shareResourceId: req.shareResourceId,
           requestUserId: req.user.id,
           userRole: req.user.role,
+          userTenantId: req.user.tenantId,
           targetMessageIndex: req.body?.targetMessageIndex,
           interfaceConfig: req.config?.interfaceConfig,
         });
