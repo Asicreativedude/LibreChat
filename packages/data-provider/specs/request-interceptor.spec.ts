@@ -360,6 +360,36 @@ describe('axios 401 interceptor — Authorization header guard', () => {
     expect(window.location.href).toBe('/login?redirect_to=%2Fshare%2Fabc123');
   });
 
+  it('redirects to login when the share fork refresh itself fails (stale session)', async () => {
+    expect.assertions(1);
+    setTokenHeader(undefined);
+
+    setWindowLocation({
+      href: 'http://localhost/share/abc123',
+      pathname: '/share/abc123',
+      search: '',
+      hash: '',
+    } as Partial<Location>);
+
+    mockAdapter.mockRejectedValueOnce({
+      response: { status: 401 },
+      config: { url: '/api/share/abc123/fork', method: 'post', headers: {} },
+    });
+
+    mockAdapter.mockRejectedValueOnce({
+      response: { status: 403 },
+      config: { url: '/api/auth/refresh', method: 'post', headers: {} },
+    });
+
+    try {
+      await axios.post('/api/share/abc123/fork');
+    } catch {
+      // expected rejection
+    }
+
+    expect(window.location.href).toBe('/login?redirect_to=%2Fshare%2Fabc123');
+  });
+
   it('redirects to login with redirect_to when authenticated and refresh returns no token on share page', async () => {
     expect.assertions(1);
     setTokenHeader('some-token');

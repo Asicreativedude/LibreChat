@@ -360,8 +360,12 @@ if (typeof window !== 'undefined') {
 
           redirectToLoginOnce();
           return Promise.reject(error);
-        } catch (err) {
-          return Promise.reject(err);
+        } catch {
+          /** A rejected refresh (stale/invalid session → 401/403) must route to
+           *  login just like an empty-token refresh, otherwise the original 401
+           *  surfaces to the caller (e.g. the share fork button) with no redirect. */
+          redirectToLoginOnce();
+          return Promise.reject(error);
         }
       }
 
