@@ -422,9 +422,10 @@ export type TForkConvoResponse = {
 
 export type TForkSharedConvoRequest = {
   shareId: string;
-  /** `createdAt` of the viewer's active message; reduces the fork to that branch.
-   *  Uses `createdAt` rather than id because shared ids are re-anonymized per request. */
-  targetCreatedAt?: string;
+  /** Index of the viewer's active message within the shared payload; reduces the
+   *  fork to that branch. An index is used because shared ids are re-anonymized
+   *  per request and `createdAt` can collide, while the payload order is stable. */
+  targetMessageIndex?: number;
 };
 
 export type TSearchResults = {

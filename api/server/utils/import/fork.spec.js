@@ -497,7 +497,7 @@ describe('forkSharedConversation', () => {
     expect(builderFactory).toHaveBeenCalledWith('user1', interfaceConfig);
   });
 
-  test('should clone only the active branch path when targetCreatedAt is provided', async () => {
+  test('should clone only the active branch path when targetMessageIndex is provided', async () => {
     getSharedMessages.mockResolvedValue({
       ...mockShare,
       messages: [
@@ -522,10 +522,11 @@ describe('forkSharedConversation', () => {
       ],
     });
 
+    // Index 1 = the "Branch A" tip the viewer had active.
     await forkSharedConversation({
       shareId: 'share123',
       requestUserId: 'user1',
-      targetCreatedAt: '2021-01-02T00:00:00.000Z',
+      targetMessageIndex: 1,
     });
 
     const savedTexts = bulkSaveMessages.mock.calls[0][0].map((message) => message.text);
@@ -533,11 +534,48 @@ describe('forkSharedConversation', () => {
     expect(savedTexts).not.toContain('Branch B (newer sibling)');
   });
 
-  test('should fall back to the full set when targetCreatedAt matches no message', async () => {
+  test('should select the correct branch even when siblings share a createdAt', async () => {
+    getSharedMessages.mockResolvedValue({
+      ...mockShare,
+      messages: [
+        {
+          messageId: 'msg_root',
+          parentMessageId: Constants.NO_PARENT,
+          text: 'Root',
+          createdAt: '2021-01-01T00:00:00.000Z',
+        },
+        {
+          messageId: 'msg_sib_a',
+          parentMessageId: 'msg_root',
+          text: 'Sibling A',
+          createdAt: '2021-01-02T00:00:00.000Z',
+        },
+        {
+          messageId: 'msg_sib_b',
+          parentMessageId: 'msg_root',
+          text: 'Sibling B (same timestamp)',
+          createdAt: '2021-01-02T00:00:00.000Z',
+        },
+      ],
+    });
+
+    // Index 2 unambiguously targets Sibling B despite the shared createdAt.
     await forkSharedConversation({
       shareId: 'share123',
       requestUserId: 'user1',
-      targetCreatedAt: '1999-01-01T00:00:00.000Z',
+      targetMessageIndex: 2,
+    });
+
+    const savedTexts = bulkSaveMessages.mock.calls[0][0].map((message) => message.text);
+    expect(savedTexts).toEqual(['Root', 'Sibling B (same timestamp)']);
+    expect(savedTexts).not.toContain('Sibling A');
+  });
+
+  test('should fall back to the full set when targetMessageIndex is out of range', async () => {
+    await forkSharedConversation({
+      shareId: 'share123',
+      requestUserId: 'user1',
+      targetMessageIndex: 999,
     });
 
     expect(bulkSaveMessages.mock.calls[0][0]).toHaveLength(mockSharedMessages.length);

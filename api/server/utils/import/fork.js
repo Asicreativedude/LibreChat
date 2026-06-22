@@ -387,7 +387,7 @@ function stripSharedFileIds(message) {
  * @param {string} [params.shareResourceId] - The SharedLink resource ID set by `canAccessSharedLink`.
  * @param {string} params.requestUserId - The ID of the user making the request.
  * @param {string} [params.userRole] - The role of the requesting user, used to resolve the default model.
- * @param {string} [params.targetCreatedAt] - `createdAt` of the message at the tip of the branch the viewer has active. When set, only the direct path to that message is cloned so the fork continues the branch that was actually shown rather than the newest sibling. Matched on `createdAt` because shared message ids are re-anonymized per request and are not stable across calls.
+ * @param {number} [params.targetMessageIndex] - Index, within the shared payload, of the message at the tip of the branch the viewer has active. When set, only the direct path to that message is cloned so the fork continues the branch that was actually shown rather than the newest sibling. An index is used (not id or `createdAt`) because shared ids are re-anonymized per request while `getSharedMessages` returns a deterministic, stable order, so the same index resolves to the same message on the server.
  * @param {object} [params.interfaceConfig] - Runtime interface config so the fork honors data retention (e.g. `expiredAt` under all-data retention), matching the import path.
  * @param {(userId: string, interfaceConfig?: object) => ImportBatchBuilder} [params.builderFactory] - Optional factory function for creating an ImportBatchBuilder instance.
  * @returns {Promise<TForkConvoResponse | null>} The new conversation and messages, or null when the share is missing or empty.
@@ -397,7 +397,7 @@ async function forkSharedConversation({
   shareResourceId,
   requestUserId,
   userRole,
-  targetCreatedAt,
+  targetMessageIndex,
   interfaceConfig,
   builderFactory = createImportBatchBuilder,
 }) {
@@ -413,24 +413,24 @@ async function forkSharedConversation({
    * The shared payload includes sibling branches. Reduce to the direct path of
    * the viewer's active message so the fork continues exactly the branch that
    * was shown; without this the default branch selection lands on the newest
-   * sibling. The active message is matched by `createdAt` (stable and preserved
-   * across requests) rather than id, since shared ids are re-anonymized per
-   * request. Falls back to the full set when no target is given or unresolved.
+   * sibling. The active tip is located by its index in the shared payload, which
+   * `getSharedMessages` returns in a deterministic order (stored ref-array order)
+   * — unlike ids (re-anonymized per request) or `createdAt` (can collide). Falls
+   * back to the full set when the index is absent or out of range.
    */
   let sourceMessages = share.messages;
-  if (targetCreatedAt != null) {
-    const targetTime = new Date(targetCreatedAt).getTime();
-    const targetMessage = share.messages.find(
-      (message) => new Date(message.createdAt).getTime() === targetTime,
-    );
-    if (targetMessage) {
-      const directPath = BaseClient.getMessagesForConversation({
-        messages: share.messages,
-        parentMessageId: targetMessage.messageId,
-      });
-      if (directPath.length > 0) {
-        sourceMessages = directPath;
-      }
+  if (
+    Number.isInteger(targetMessageIndex) &&
+    targetMessageIndex >= 0 &&
+    targetMessageIndex < share.messages.length
+  ) {
+    const targetMessage = share.messages[targetMessageIndex];
+    const directPath = BaseClient.getMessagesForConversation({
+      messages: share.messages,
+      parentMessageId: targetMessage.messageId,
+    });
+    if (directPath.length > 0) {
+      sourceMessages = directPath;
     }
   }
 

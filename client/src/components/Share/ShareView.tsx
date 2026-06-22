@@ -66,12 +66,14 @@ function SharedView() {
     },
   });
 
-  /** Resolve the `createdAt` of the message at the tip of the branch the viewer
-   *  currently has active (default or manually navigated), so the fork continues
-   *  that exact branch instead of the newest sibling. Mirrors the share tree's
-   *  sibling selection, which is keyed by parent id with the root on SHARED_CONVO_KEY.
-   *  `createdAt` (not id) is sent because shared ids are re-anonymized per request. */
-  const getActiveTargetCreatedAt = useRecoilCallback(
+  /** Resolve the index, within the shared payload, of the message at the tip of
+   *  the branch the viewer currently has active (default or manually navigated),
+   *  so the fork continues that exact branch instead of the newest sibling.
+   *  Mirrors the share tree's sibling selection, which is keyed by parent id with
+   *  the root on SHARED_CONVO_KEY. An index is sent (not id or createdAt) because
+   *  shared ids are re-anonymized per request and createdAt can collide, while
+   *  the payload order is stable across requests. */
+  const getActiveTargetIndex = useRecoilCallback(
     ({ snapshot }) =>
       () => {
         const messages = data?.messages;
@@ -83,7 +85,11 @@ function SharedView() {
             .getLoadable(store.messagesSiblingIdxFamily(parentMessageId ?? SHARED_CONVO_KEY))
             .getValue() ?? 0;
         const tail = selectActiveBranchTail(messages, SHARED_CONVO_KEY, getSiblingIndex);
-        return tail?.createdAt ?? undefined;
+        if (tail == null) {
+          return undefined;
+        }
+        const index = messages.findIndex((message) => message.messageId === tail.messageId);
+        return index >= 0 ? index : undefined;
       },
     [data?.messages],
   );
@@ -93,8 +99,8 @@ function SharedView() {
     if (shareId == null || shareId === '') {
       return;
     }
-    forkSharedConvo({ shareId, targetCreatedAt: getActiveTargetCreatedAt() });
-  }, [shareId, forkSharedConvo, getActiveTargetCreatedAt]);
+    forkSharedConvo({ shareId, targetMessageIndex: getActiveTargetIndex() });
+  }, [shareId, forkSharedConvo, getActiveTargetIndex]);
 
   // configure document title
   let docTitle = '';

@@ -774,9 +774,9 @@ export function forkConversation(payload: t.TForkConvoRequest): Promise<t.TForkC
 
 export function forkSharedConversation(
   shareId: string,
-  targetCreatedAt?: string,
+  targetMessageIndex?: number,
 ): Promise<t.TForkConvoResponse> {
-  return request.post(endpoints.forkSharedMessages(shareId), { targetCreatedAt });
+  return request.post(endpoints.forkSharedMessages(shareId), { targetMessageIndex });
 }
 
 export function deleteConversation(payload: t.TDeleteConversationRequest) {
