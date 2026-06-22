@@ -496,6 +496,52 @@ describe('forkSharedConversation', () => {
 
     expect(builderFactory).toHaveBeenCalledWith('user1', interfaceConfig);
   });
+
+  test('should clone only the active branch path when targetCreatedAt is provided', async () => {
+    getSharedMessages.mockResolvedValue({
+      ...mockShare,
+      messages: [
+        {
+          messageId: 'msg_root',
+          parentMessageId: Constants.NO_PARENT,
+          text: 'Root',
+          createdAt: '2021-01-01T00:00:00.000Z',
+        },
+        {
+          messageId: 'msg_branch_a',
+          parentMessageId: 'msg_root',
+          text: 'Branch A (shared)',
+          createdAt: '2021-01-02T00:00:00.000Z',
+        },
+        {
+          messageId: 'msg_branch_b',
+          parentMessageId: 'msg_root',
+          text: 'Branch B (newer sibling)',
+          createdAt: '2021-01-03T00:00:00.000Z',
+        },
+      ],
+    });
+
+    await forkSharedConversation({
+      shareId: 'share123',
+      requestUserId: 'user1',
+      targetCreatedAt: '2021-01-02T00:00:00.000Z',
+    });
+
+    const savedTexts = bulkSaveMessages.mock.calls[0][0].map((message) => message.text);
+    expect(savedTexts).toEqual(['Root', 'Branch A (shared)']);
+    expect(savedTexts).not.toContain('Branch B (newer sibling)');
+  });
+
+  test('should fall back to the full set when targetCreatedAt matches no message', async () => {
+    await forkSharedConversation({
+      shareId: 'share123',
+      requestUserId: 'user1',
+      targetCreatedAt: '1999-01-01T00:00:00.000Z',
+    });
+
+    expect(bulkSaveMessages.mock.calls[0][0]).toHaveLength(mockSharedMessages.length);
+  });
 });
 
 const mockMessagesComplex = [

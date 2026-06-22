@@ -686,7 +686,8 @@ export const useForkSharedConvoMutation = (
   const { onSuccess, ..._options } = options ?? {};
 
   return useMutation(
-    (payload: t.TForkSharedConvoRequest) => dataService.forkSharedConversation(payload.shareId),
+    (payload: t.TForkSharedConvoRequest) =>
+      dataService.forkSharedConversation(payload.shareId, payload.targetCreatedAt),
     {
       onSuccess: (data, vars, context) => {
         const forkedConversation = data.conversation;

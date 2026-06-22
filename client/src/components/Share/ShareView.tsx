@@ -1,8 +1,8 @@
 import { memo, useState, useCallback, useContext } from 'react';
 import Cookies from 'js-cookie';
-import { useRecoilState } from 'recoil';
 import { buildTree } from 'librechat-data-provider';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useRecoilState, useRecoilCallback } from 'recoil';
 import { CalendarDays, Settings, MessageSquarePlus } from 'lucide-react';
 import { useGetSharedMessages } from 'librechat-data-provider/react-query';
 import {
@@ -19,14 +19,17 @@ import {
 } from '@librechat/client';
 import { ThemeSelector, LangSelector } from '~/components/Nav/SettingsTabs/General/Selectors';
 import { useGetStartupConfig, useForkSharedConvoMutation } from '~/data-provider';
+import { cn, getResponseStatus, selectActiveBranchTail } from '~/utils';
 import { ShareMessagesProvider } from './ShareMessagesProvider';
 import { ShareArtifactsContainer } from './ShareArtifacts';
 import { useLocalize, useDocumentTitle } from '~/hooks';
-import { cn, getResponseStatus } from '~/utils';
 import { ShareContext } from '~/Providers';
 import MessagesView from './MessagesView';
 import Footer from '../Chat/Footer';
 import store from '~/store';
+
+/** Root sibling-index key used by the shared MessagesView/MultiMessage tree. */
+const SHARED_CONVO_KEY = 'shared-conversation';
 
 function SharedView() {
   const localize = useLocalize();
@@ -63,13 +66,35 @@ function SharedView() {
     },
   });
 
+  /** Resolve the `createdAt` of the message at the tip of the branch the viewer
+   *  currently has active (default or manually navigated), so the fork continues
+   *  that exact branch instead of the newest sibling. Mirrors the share tree's
+   *  sibling selection, which is keyed by parent id with the root on SHARED_CONVO_KEY.
+   *  `createdAt` (not id) is sent because shared ids are re-anonymized per request. */
+  const getActiveTargetCreatedAt = useRecoilCallback(
+    ({ snapshot }) =>
+      () => {
+        const messages = data?.messages;
+        if (messages == null || messages.length === 0) {
+          return undefined;
+        }
+        const getSiblingIndex = (parentMessageId: string | null | undefined) =>
+          snapshot
+            .getLoadable(store.messagesSiblingIdxFamily(parentMessageId ?? SHARED_CONVO_KEY))
+            .getValue() ?? 0;
+        const tail = selectActiveBranchTail(messages, SHARED_CONVO_KEY, getSiblingIndex);
+        return tail?.createdAt ?? undefined;
+      },
+    [data?.messages],
+  );
+
   const { mutate: forkSharedConvo } = forkShare;
   const handleContinue = useCallback(() => {
     if (shareId == null || shareId === '') {
       return;
     }
-    forkSharedConvo({ shareId });
-  }, [shareId, forkSharedConvo]);
+    forkSharedConvo({ shareId, targetCreatedAt: getActiveTargetCreatedAt() });
+  }, [shareId, forkSharedConvo, getActiveTargetCreatedAt]);
 
   // configure document title
   let docTitle = '';
@@ -142,7 +167,7 @@ function SharedView() {
           isContinuing={forkShare.isLoading}
         />
         <ShareMessagesProvider messages={data.messages}>
-          <MessagesView messagesTree={messagesTree} conversationId="shared-conversation" />
+          <MessagesView messagesTree={messagesTree} conversationId={SHARED_CONVO_KEY} />
         </ShareMessagesProvider>
       </>
     );

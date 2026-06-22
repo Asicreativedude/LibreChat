@@ -357,7 +357,9 @@ describe('share fork route', () => {
     };
     forkSharedConversation.mockResolvedValue(forkResult);
 
-    const response = await request(buildApp()).post('/api/share/share-123/fork');
+    const response = await request(buildApp())
+      .post('/api/share/share-123/fork')
+      .send({ targetCreatedAt: '2021-01-02T00:00:00.000Z' });
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual(forkResult);
@@ -366,6 +368,7 @@ describe('share fork route', () => {
       shareResourceId: 'resource-123',
       requestUserId: 'user-123',
       userRole: undefined,
+      targetCreatedAt: '2021-01-02T00:00:00.000Z',
       interfaceConfig: { retentionMode: 'temporary' },
     });
   });

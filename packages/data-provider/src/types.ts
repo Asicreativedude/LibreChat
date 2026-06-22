@@ -422,6 +422,9 @@ export type TForkConvoResponse = {
 
 export type TForkSharedConvoRequest = {
   shareId: string;
+  /** `createdAt` of the viewer's active message; reduces the fork to that branch.
+   *  Uses `createdAt` rather than id because shared ids are re-anonymized per request. */
+  targetCreatedAt?: string;
 };
 
 export type TSearchResults = {
