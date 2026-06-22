@@ -2936,3 +2936,74 @@ html {
 .sharepoint-picker-bg {
   background-color: #f5f5f5;
 }
+
+/* ============================================================================
+   Open Brain — "Studio-light" HUD skin (Track C step 5, ADR 0002)
+   ----------------------------------------------------------------------------
+   VARIABLE LAYER ONLY: re-points LibreChat's semantic CSS tokens to Open Brain's
+   palette. No component/layout edits (those are Week-2+). This is the cheapest,
+   most rebase-survivable customization surface (one block, end of file).
+   Studio-light: warm off-white surfaces, near-black ink, Open blue (#1A4FD8)
+   accent. Scoped to :root:not(.dark) so LibreChat's dark theme is untouched
+   (a later block re-points only the dark accent). Re-verified against the
+   step-3 RTL baseline (infra/librechat/rtl-baseline).
+   ============================================================================ */
+:root:not(.dark) {
+  /* surfaces — warm off-white app, white cards */
+  --surface-primary: #ffffff;
+  --surface-primary-alt: #faf9f6;
+  --surface-primary-contrast: #f0ede7;
+  --surface-secondary: #f7f5f1;
+  --surface-secondary-alt: #efece6;
+  --surface-tertiary: #f2efe9;
+  --surface-tertiary-alt: #ffffff;
+  --surface-dialog: #ffffff;
+  --surface-chat: #f7f5f1;
+  --surface-active: #efece6;
+  --surface-active-alt: #e6e2d9;
+  --surface-hover: #efece6;
+  --surface-hover-alt: #e6e2d9;
+
+  /* accent — Open blue replaces LibreChat's green submit */
+  --surface-submit: #1a4fd8;
+  --surface-submit-hover: #143fb0;
+
+  /* ink */
+  --text-primary: #14171a;
+  --text-secondary: #4b5563;
+  --text-secondary-alt: #6b7280;
+  --text-tertiary: #6b7280;
+
+  /* borders — warm neutrals */
+  --border-light: #e9e5dd;
+  --border-medium: #ddd8cd;
+  --border-medium-alt: #ddd8cd;
+  --border-heavy: #c9c3b6;
+
+  /* focus ring → accent */
+  --ring-primary: #1a4fd8;
+
+  /* shadcn HSL tokens (buttons / inputs / rings) */
+  --background: 40 27% 96%; /* #f7f5f1 */
+  --foreground: 210 13% 9%; /* #14171a */
+  --card: 0 0% 100%;
+  --card-foreground: 210 13% 9%;
+  --primary: 224 78% 47%; /* #1a4fd8 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 40 20% 94%;
+  --muted: 40 20% 94%;
+  --muted-foreground: 220 9% 46%; /* #6b7280 */
+  --border: 40 16% 88%;
+  --input: 40 16% 88%;
+  --ring: 224 78% 47%;
+}
+
+/* Dark theme keeps LibreChat's surfaces; only the accent becomes Open blue, so
+   the brand reads in both themes. */
+.dark {
+  --surface-submit: #1a4fd8;
+  --surface-submit-hover: #143fb0;
+  --ring-primary: #4f6bff;
+  --primary: 224 78% 47%;
+  --ring: 224 78% 47%;
+}
