@@ -11,8 +11,6 @@ module.exports = {
   darkMode: ['class'],
   theme: {
     fontFamily: {
-      // Open Brain skin (ADR 0002): Heebo carries Hebrew (the studio's primary
-      // language, §14 RTL); Inter the Latin. Both fall back to system if absent.
       sans: ['Inter', 'Heebo', 'sans-serif'],
       mono: ['Roboto Mono', 'monospace'],
     },
