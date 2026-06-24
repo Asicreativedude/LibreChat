@@ -91,6 +91,21 @@ export const resources = {
   uk: { translation: translationUk },
 } as const;
 
+/** Base language codes that render right-to-left. */
+const rtlLanguages = new Set(['ar', 'fa', 'he', 'ug', 'ur', 'yi', 'ckb', 'ps', 'sd']);
+
+/** True when a (possibly region-suffixed) language code is right-to-left, e.g. `he-IL`. */
+export const isRTLLang = (lng?: string) =>
+  rtlLanguages.has((lng ?? '').toLowerCase().split('-')[0] ?? '');
+
+/** Sync the document direction to the active language so the whole UI flips for RTL locales. */
+const applyDocumentDirection = (lng?: string) => {
+  if (typeof document === 'undefined') {
+    return;
+  }
+  document.documentElement.dir = isRTLLang(lng) ? 'rtl' : 'ltr';
+};
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -108,5 +123,8 @@ i18n
     resources,
     interpolation: { escapeValue: false },
   });
+
+applyDocumentDirection(i18n.language);
+i18n.on('languageChanged', applyDocumentDirection);
 
 export default i18n;
