@@ -32,9 +32,11 @@ const auth = require('./auth');
 const keys = require('./keys');
 const user = require('./user');
 const mcp = require('./mcp');
+const obHandoff = require('./obHandoff');
 
 module.exports = {
   mcp,
+  obHandoff,
   auth,
   adminAuth,
   adminConfig,

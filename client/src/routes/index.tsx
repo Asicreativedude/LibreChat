@@ -19,6 +19,7 @@ import LoginLayout from './Layouts/Login';
 import dashboardRoutes from './Dashboard';
 import ShareRoute from './ShareRoute';
 import ChatRoute from './ChatRoute';
+import Onboarding from './Onboarding';
 import Search from './Search';
 import Root from './Root';
 
@@ -123,6 +124,10 @@ export const router = createBrowserRouter(
             {
               path: 'search',
               element: <Search />,
+            },
+            {
+              path: 'onboarding',
+              element: <Onboarding />,
             },
             {
               path: 'prompts',
