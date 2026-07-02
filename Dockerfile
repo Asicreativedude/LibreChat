@@ -54,8 +54,16 @@ RUN \
 COPY --chown=node:node . .
 
 RUN \
-    # React client build with configurable memory
-    NODE_OPTIONS="--max-old-space-size=${NODE_MAX_OLD_SPACE_SIZE}" npm run frontend; \
+    # Open Brain (ADR 0016 productize): reuse a host-prebuilt client/dist when present
+    # (COPY . . brings it in; .dockerignore keeps it) so the OOM-prone in-Docker Vite
+    # build is skipped on <8GB Docker VMs. Shared packages still build in-image for
+    # node-version alignment. No host dist → original full `npm run frontend` fallback.
+    if [ -n "$(ls -A client/dist 2>/dev/null)" ]; then \
+        echo "Open Brain: host-prebuilt client/dist present — building packages only, skipping in-Docker client build"; \
+        npm run build:data-provider && npm run build:data-schemas && npm run build:api && npm run build:client-package; \
+    else \
+        NODE_OPTIONS="--max-old-space-size=${NODE_MAX_OLD_SPACE_SIZE}" npm run frontend; \
+    fi; \
     npm prune --production; \
     npm cache clean --force
 
