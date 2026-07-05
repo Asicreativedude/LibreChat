@@ -367,6 +367,19 @@ html {
   size-adjust: 94%;
 }
 
+/* Open Brain skin (ADR 0002, §14 RTL): Heebo carries Hebrew. The stack lists
+   Inter first, so Latin keeps Inter; per-glyph fallback + this unicode-range
+   route only Hebrew codepoints here. One variable woff2 (wght 100–900) covers
+   every weight, so Hebrew bold/semibold are real, not synthesized. */
+@font-face {
+  font-display: swap;
+  font-family: Heebo;
+  font-style: normal;
+  font-weight: 100 900;
+  src: url('$fonts/Heebo-Hebrew.woff2') format('woff2');
+  unicode-range: U+0590-05FF, U+FB1D-FB4F, U+200C-2010, U+20AA, U+25CC;
+}
+
 @font-face {
   font-display: swap;
   font-family: Roboto Mono;
