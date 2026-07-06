@@ -69,7 +69,13 @@ export default function useUnifiedSidebarLinks() {
       onClick: () => navigate('/onboarding'),
     };
 
-    return [conversationLink, onboardingLink, ...sideNavLinks];
+    // Open Brain: studio users only need chat + files + onboarding. Hide the rest
+    // of LibreChat's side panels (prompts/agents/memories/bookmarks/mcp/params) from
+    // the sidebar. ponytail: UI allowlist here, not backend RBAC — add ids to reveal more.
+    const allowedSideLinks = new Set(['files']);
+    const sideLinks = sideNavLinks.filter((link) => allowedSideLinks.has(link.id ?? ''));
+
+    return [conversationLink, onboardingLink, ...sideLinks];
   }, [sideNavLinks, navigate]);
 
   return links;
