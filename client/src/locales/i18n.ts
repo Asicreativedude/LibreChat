@@ -98,23 +98,45 @@ const rtlLanguages = new Set(['ar', 'fa', 'he', 'ug', 'ur', 'yi', 'ckb', 'ps', '
 export const isRTLLang = (lng?: string) =>
   rtlLanguages.has((lng ?? '').toLowerCase().split('-')[0] ?? '');
 
-/** Sync the document direction to the active language so the whole UI flips for RTL locales. */
-const applyDocumentDirection = (lng?: string) => {
+/**
+ * Sync `<html dir>` and `<html lang>` to the active language, so the whole UI flips
+ * for RTL locales and assistive tech announces the right language.
+ *
+ * `lang` matters as much as `dir`: index.html hardcodes `lang="en-US"` and upstream
+ * only refreshes it from the Settings tab and the share view — neither of which runs
+ * on the auth screens. Left alone, a screen reader reads Hebrew with an English voice.
+ * This runs on every `languageChanged`, so it is the one place that covers all paths.
+ */
+const applyDocumentLanguage = (lng?: string) => {
   if (typeof document === 'undefined') {
     return;
   }
   document.documentElement.dir = isRTLLang(lng) ? 'rtl' : 'ltr';
+  if (lng != null && lng !== '') {
+    document.documentElement.lang = lng;
+  }
 };
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
+    // Open Brain: Hebrew-first. The detector's implicit sources (navigator,
+    // htmlTag, path, subdomain) are dropped so a first-time visitor resolves to
+    // nothing and lands on the `default` fallback below — Hebrew — instead of
+    // inheriting the browser's locale. The explicit sources are kept and cached,
+    // so a language picked in Settings persists and still wins on the next boot.
+    detection: {
+      order: ['querystring', 'cookie', 'localStorage', 'sessionStorage'],
+      caches: ['localStorage'],
+    },
     fallbackLng: {
       'zh-TW': ['zh-Hant', 'en'],
       'zh-HK': ['zh-Hant', 'en'],
       zh: ['zh-Hans', 'en'],
-      default: ['en'],
+      // he first, en behind it: Hebrew is ~70% complete upstream, so an
+      // untranslated key still renders English rather than its raw key name.
+      default: ['he', 'en'],
     },
     fallbackNS: 'translation',
     ns: ['translation'],
@@ -124,7 +146,7 @@ i18n
     interpolation: { escapeValue: false },
   });
 
-applyDocumentDirection(i18n.language);
-i18n.on('languageChanged', applyDocumentDirection);
+applyDocumentLanguage(i18n.language);
+i18n.on('languageChanged', applyDocumentLanguage);
 
 export default i18n;
