@@ -322,6 +322,10 @@ const ChatForm = memo(function ChatForm({
                     onCompositionEnd={handleCompositionEnd}
                     id={mainTextareaId}
                     tabIndex={0}
+                    // Open Brain (RTL §14): follow the typed text, not the UI locale. The
+                    // studio writes Hebrew and English in the same box; inheriting dir=rtl
+                    // puts English punctuation on the wrong end mid-sentence.
+                    dir="auto"
                     data-testid="text-input"
                     rows={1}
                     onFocus={handleTextareaFocus}
