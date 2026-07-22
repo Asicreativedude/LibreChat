@@ -3009,6 +3009,10 @@ html {
   --border: 40 16% 88%;
   --input: 40 16% 88%;
   --ring: 224 78% 47%;
+
+  /* accent *ink* — distinct from --surface-submit (a fill). Open blue at full
+     strength reads on light surfaces; dark needs a lighter tint for contrast. */
+  --text-accent: #1a4fd8;
 }
 
 /* Dark theme keeps LibreChat's surfaces; only the accent becomes Open blue, so
@@ -3019,4 +3023,5 @@ html {
   --ring-primary: #4f6bff;
   --primary: 224 78% 47%;
   --ring: 224 78% 47%;
+  --text-accent: #8aa2ff; /* #1a4fd8 on near-black is ~2.5:1 — fails WCAG AA */
 }

@@ -78,7 +78,7 @@ function RequestPasswordReset() {
 
   const VerificationSuccess = () => (
     <div className="flex flex-col items-center justify-center">
-      <h1 className="mb-4 text-center text-3xl font-semibold text-black dark:text-white">
+      <h1 className="mb-4 text-center text-3xl font-semibold text-text-primary">
         {headerText}
       </h1>
       {countdown > 0 && (
@@ -90,7 +90,7 @@ function RequestPasswordReset() {
         <p className="text-center text-lg text-gray-600 dark:text-gray-400">
           {localize('com_auth_email_verification_resend_prompt')}
           <button
-            className="ml-2 text-blue-600 hover:underline"
+            className="ml-2 text-text-accent hover:underline"
             onClick={handleResendEmail}
             disabled={resendEmailMutation.isLoading}
           >
@@ -103,17 +103,17 @@ function RequestPasswordReset() {
 
   const VerificationInProgress = () => (
     <div className="flex flex-col items-center justify-center">
-      <h1 className="mb-4 text-center text-3xl font-semibold text-black dark:text-white">
+      <h1 className="mb-4 text-center text-3xl font-semibold text-text-primary">
         {localize('com_auth_email_verification_in_progress')}
       </h1>
       <div className="mt-4 flex justify-center">
-        <Spinner className="h-8 w-8 text-green-500" />
+        <Spinner className="h-8 w-8 text-text-accent" />
       </div>
     </div>
   );
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white pt-6 dark:bg-gray-900 sm:pt-0">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface-primary pt-6 sm:pt-0">
       <div className="absolute bottom-0 left-0 m-4">
         <ThemeSelector />
       </div>
