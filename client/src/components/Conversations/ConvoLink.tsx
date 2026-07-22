@@ -32,6 +32,7 @@ const ConvoLink: React.FC<ConvoLinkProps> = ({
     >
       {children}
       <div
+        dir="auto"
         className="relative flex-1 grow overflow-hidden whitespace-nowrap"
         style={{ textOverflow: 'clip' }}
         onDoubleClick={(e) => {
@@ -48,7 +49,7 @@ const ConvoLink: React.FC<ConvoLinkProps> = ({
       </div>
       <div
         className={cn(
-          'pointer-events-none absolute bottom-0.5 right-0.5 top-0.5 w-20 rounded-r-md bg-gradient-to-l',
+          'pointer-events-none absolute bottom-0.5 end-0.5 top-0.5 w-20 rounded-e-md bg-gradient-to-l rtl:bg-gradient-to-r',
           isActiveConvo || isPopoverActive
             ? 'from-surface-active-alt'
             : 'from-surface-primary-alt from-0% to-transparent group-hover:from-surface-active-alt group-hover:from-40%',

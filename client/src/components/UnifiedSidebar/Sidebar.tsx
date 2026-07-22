@@ -45,7 +45,7 @@ function Sidebar({
         aria-label="Resize sidebar"
         tabIndex={expanded ? 0 : -1}
         className={cn(
-          'absolute right-0 top-0 z-10 h-full w-1 cursor-col-resize transition-colors hover:bg-border-medium active:bg-border-heavy',
+          'absolute end-0 top-0 z-10 h-full w-1 cursor-col-resize transition-colors hover:bg-border-medium active:bg-border-heavy',
           expanded ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         style={{ transition: expanded ? 'opacity 200ms ease 80ms' : 'opacity 150ms ease' }}
