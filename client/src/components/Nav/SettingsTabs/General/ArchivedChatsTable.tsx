@@ -158,7 +158,7 @@ export default function ArchivedChatsTable({
                   aria-current={sortState ? 'true' : 'false'}
                 >
                   {localize('com_nav_archive_name')}
-                  <SortIcon className="ml-2 h-3 w-4 sm:h-4 sm:w-4" />
+                  <SortIcon className="ms-2 h-3 w-4 sm:h-4 sm:w-4" />
                 </Button>
               }
             />
@@ -223,7 +223,7 @@ export default function ArchivedChatsTable({
                   aria-current={sortState ? 'true' : 'false'}
                 >
                   {localize('com_nav_archive_created_at')}
-                  <SortIcon className="ml-2 h-3 w-4 sm:h-4 sm:w-4" />
+                  <SortIcon className="ms-2 h-3 w-4 sm:h-4 sm:w-4" />
                 </Button>
               }
             />

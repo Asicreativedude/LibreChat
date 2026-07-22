@@ -186,9 +186,9 @@ const BackupCodesItem: React.FC = () => {
                     className="px-8 py-3 transition-all disabled:opacity-50"
                   >
                     {isLoading ? (
-                      <Spinner className="mr-2" />
+                      <Spinner className="me-2" />
                     ) : (
-                      <RefreshCcw className="mr-2 h-4 w-4" aria-hidden="true" />
+                      <RefreshCcw className="me-2 h-4 w-4" aria-hidden="true" />
                     )}
                     {isLoading
                       ? localize('com_ui_regenerating')
@@ -204,7 +204,7 @@ const BackupCodesItem: React.FC = () => {
                   variant="default"
                   className="px-8 py-3 transition-all disabled:opacity-50"
                 >
-                  {isLoading && <Spinner className="mr-2" />}
+                  {isLoading && <Spinner className="me-2" />}
                   {localize('com_ui_regenerate_backup')}
                 </Button>
               </div>

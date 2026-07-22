@@ -40,7 +40,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4 py-1.5">
       <div className="text-text-secondary">{label}</div>
-      <div className="break-all text-right font-mono text-xs text-text-primary">{value}</div>
+      <div className="break-all text-end font-mono text-xs text-text-primary">{value}</div>
     </div>
   );
 }

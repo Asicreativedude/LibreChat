@@ -186,7 +186,7 @@ export default function SharedLinks() {
                   aria-current={sortState ? 'true' : 'false'}
                 >
                   {localize('com_ui_name')}
-                  <SortIcon className="ml-2 h-3 w-4 sm:h-4 sm:w-4" />
+                  <SortIcon className="ms-2 h-3 w-4 sm:h-4 sm:w-4" />
                 </Button>
               }
             />
@@ -244,7 +244,7 @@ export default function SharedLinks() {
                   aria-current={sortState ? 'true' : 'false'}
                 >
                   {localize('com_ui_date')}
-                  <SortIcon className="ml-2 h-3 w-4 sm:h-4 sm:w-4" />
+                  <SortIcon className="ms-2 h-3 w-4 sm:h-4 sm:w-4" />
                 </Button>
               }
             />
@@ -358,7 +358,7 @@ export default function SharedLinks() {
                 className="flex w-full flex-col items-center gap-2"
               >
                 <div className="grid w-full items-center gap-2">
-                  <Label htmlFor="dialog-confirm-delete" className="text-left text-sm font-medium">
+                  <Label htmlFor="dialog-confirm-delete" className="text-start text-sm font-medium">
                     <Trans
                       i18nKey="com_ui_delete_confirm_strong"
                       values={{ title: deleteRow?.title }}
