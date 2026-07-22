@@ -49,7 +49,7 @@ function Header() {
           {!(navVisible && isSmallScreen) && (
             <div
               className={cn(
-                'flex items-center gap-2 pl-2',
+                'flex items-center gap-2 ps-2',
                 !isSmallScreen ? 'transition-all duration-200 ease-in-out' : '',
               )}
             >

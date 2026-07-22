@@ -636,7 +636,7 @@ function MessageNav({ scrollableRef }: { scrollableRef: React.RefObject<HTMLDivE
     <nav
       aria-label={localize('com_ui_message_nav')}
       className={cn(
-        'group/nav absolute right-2 top-1/2 z-40 hidden max-h-[min(24rem,calc(100%-2rem))]',
+        'group/nav absolute end-2 top-1/2 z-40 hidden max-h-[min(24rem,calc(100%-2rem))]',
         '-translate-y-1/2 flex-col items-center gap-1.5 rounded-full px-1 py-2 md:flex',
         'opacity-30 transition-opacity duration-300',
         'hover:bg-black/5 hover:opacity-100 dark:hover:bg-white/5',
