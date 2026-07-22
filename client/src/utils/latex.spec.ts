@@ -251,4 +251,15 @@ y$ which spans lines`;
     const expected = 'Revenue: \\$5M to \\$10M, funding: \\$1.5B, price: \\$5K';
     expect(preprocessLaTeX(content)).toBe(expected);
   });
+
+  test('does not treat suffixed currency ($ after a number) as math, RTL', () => {
+    const content = 'התקציב החודשי הוא 500$, ומתוכו נוצל 0$.';
+    expect(preprocessLaTeX(content)).toBe(content);
+  });
+
+  test('still opens a math span after a number when separated by a space', () => {
+    const content = 'Compute 2 $x + y$ now';
+    const expected = 'Compute 2 $$x + y$$ now';
+    expect(preprocessLaTeX(content)).toBe(expected);
+  });
 });

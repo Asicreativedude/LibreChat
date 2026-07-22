@@ -5,7 +5,9 @@ const MHCHEM_CE_ESCAPED_REGEX = /\$\\\\ce\{[^}]*\}\$/g;
 const MHCHEM_PU_ESCAPED_REGEX = /\$\\\\pu\{[^}]*\}\$/g;
 const CURRENCY_REGEX =
   /(?<![\\$])\$(?!\$)(?=\d+(?:,\d{3})*(?:\.\d+)?(?:[KMBkmb])?(?:\s|$|[^a-zA-Z\d]))/g;
-const SINGLE_DOLLAR_REGEX = /(?<!\\)\$(?!\$)((?:[^$\n]|\\[$])+?)(?<!\\)(?<!`)\$(?!\$)/g;
+// A `$` glued to the end of a number (`500$`) is a suffixed currency amount — as RTL
+// languages write it — never a math opening delimiter, so it must not start a `$…$` span.
+const SINGLE_DOLLAR_REGEX = /(?<![\\\d])\$(?!\$)((?:[^$\n]|\\[$])+?)(?<!\\)(?<!`)\$(?!\$)/g;
 
 /**
  * Escapes mhchem package notation in LaTeX by converting single dollar delimiters to double dollars
