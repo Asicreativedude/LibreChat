@@ -11,11 +11,27 @@ import type {
 import type { FilterQuery } from 'mongoose';
 import type { Response } from 'express';
 import type { ServerRequest } from '~/types/http';
+import type { InviteDeps } from '~/auth';
 import { parsePagination } from './pagination';
+import { checkEmailConfig } from '~/utils';
+import { createInvite } from '~/auth';
 
 const MAX_SEARCH_LENGTH = 200;
 
 const USER_LIST_FIELDS = '_id name username email avatar role provider createdAt updatedAt';
+
+/** The invite email, rendered by `inviteUser.handlebars`. */
+export interface InviteEmailParams {
+  email: string;
+  subject: string;
+  payload: {
+    appName: string;
+    inviteLink: string;
+    year: number;
+    name: string;
+  };
+  template: string;
+}
 
 export interface AdminUsersDeps {
   findUsers: (
@@ -40,10 +56,62 @@ export interface AdminUsersDeps {
     principalType: PrincipalType;
     principalId: string | Types.ObjectId;
   }) => Promise<void>;
+  /** Token persistence for the invite (mirrors `checkInviteUser`'s deps). */
+  createToken: InviteDeps['createToken'];
+  findToken: InviteDeps['findToken'];
+  /** Nodemailer/Mailgun send — api-side, injected. */
+  sendEmail: (params: InviteEmailParams) => Promise<unknown>;
 }
 
 export function createAdminUsersHandlers(deps: AdminUsersDeps) {
-  const { findUsers, countUsers, deleteUserById, deleteConfig, deleteAclEntries } = deps;
+  const {
+    findUsers,
+    countUsers,
+    deleteUserById,
+    deleteConfig,
+    deleteAclEntries,
+    createToken,
+    findToken,
+    sendEmail,
+  } = deps;
+
+  async function inviteUserHandler(req: ServerRequest, res: Response) {
+    try {
+      const { email: rawEmail } = req.body as { email?: string };
+      const email = typeof rawEmail === 'string' ? rawEmail.trim() : '';
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ error: 'A valid email address is required' });
+      }
+
+      if (!checkEmailConfig()) {
+        return res.status(503).json({ error: 'Email service is not configured' });
+      }
+
+      const [existing] = await findUsers({ email }, '_id', { limit: 1 });
+      if (existing) {
+        return res.status(409).json({ error: 'A user with that email already exists' });
+      }
+
+      const token = await createInvite(email, { createToken, findToken });
+      if (typeof token !== 'string') {
+        return res.status(500).json({ error: 'Failed to create invite' });
+      }
+
+      const appName = process.env.APP_TITLE || 'LibreChat';
+      const inviteLink = `${process.env.DOMAIN_CLIENT}/register?token=${token}`;
+      await sendEmail({
+        email,
+        subject: `Invite to join ${appName}!`,
+        payload: { appName, inviteLink, year: new Date().getFullYear(), name: email },
+        template: 'inviteUser.handlebars',
+      });
+
+      return res.status(201).json({ email, message: 'Invitation sent' });
+    } catch (error) {
+      logger.error('[adminUsers] inviteUser error:', error);
+      return res.status(500).json({ error: 'Failed to send invitation' });
+    }
+  }
 
   async function listUsersHandler(req: ServerRequest, res: Response) {
     try {
@@ -180,5 +248,6 @@ export function createAdminUsersHandlers(deps: AdminUsersDeps) {
     listUsers: listUsersHandler,
     searchUsers: searchUsersHandler,
     deleteUser: deleteUserHandler,
+    inviteUser: inviteUserHandler,
   };
 }

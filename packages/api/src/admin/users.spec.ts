@@ -32,13 +32,14 @@ function createReqRes(
   overrides: {
     params?: Record<string, string>;
     query?: Record<string, string | string[]>;
+    body?: Record<string, unknown>;
     user?: { _id?: Types.ObjectId; id?: string; role?: string; tenantId?: string };
   } = {},
 ) {
   const req = {
     params: overrides.params ?? {},
     query: overrides.query ?? {},
-    body: {},
+    body: overrides.body ?? {},
     user: overrides.user ?? { _id: new Types.ObjectId(), role: 'admin' },
   } as unknown as ServerRequest;
 
@@ -58,6 +59,9 @@ function createDeps(overrides: Partial<AdminUsersDeps> = {}): AdminUsersDeps {
       .mockResolvedValue({ deletedCount: 1, message: 'User was deleted successfully.' }),
     deleteConfig: jest.fn().mockResolvedValue(null),
     deleteAclEntries: jest.fn().mockResolvedValue(undefined),
+    createToken: jest.fn().mockResolvedValue({}),
+    findToken: jest.fn().mockResolvedValue(null),
+    sendEmail: jest.fn().mockResolvedValue({}),
     ...overrides,
   };
 }
@@ -500,6 +504,82 @@ describe('createAdminUsersHandlers', () => {
 
       expect(status).toHaveBeenCalledWith(500);
       expect(json).toHaveBeenCalledWith({ error: 'Failed to delete user' });
+    });
+  });
+
+  describe('inviteUser', () => {
+    const emailEnv = {
+      EMAIL_HOST: process.env.EMAIL_HOST,
+      EMAIL_FROM: process.env.EMAIL_FROM,
+      DOMAIN_CLIENT: process.env.DOMAIN_CLIENT,
+    };
+
+    beforeEach(() => {
+      process.env.EMAIL_HOST = 'smtp.example.com';
+      process.env.EMAIL_FROM = 'noreply@example.com';
+      process.env.DOMAIN_CLIENT = 'https://chat.example.com';
+    });
+
+    afterEach(() => {
+      for (const [k, v] of Object.entries(emailEnv)) {
+        if (v === undefined) {
+          delete process.env[k];
+        } else {
+          process.env[k] = v;
+        }
+      }
+    });
+
+    it('creates the invite and sends the email (201)', async () => {
+      const deps = createDeps({ createToken: jest.fn().mockResolvedValue({}) });
+      const handlers = createAdminUsersHandlers(deps);
+      const { req, res, status, json } = createReqRes({ body: { email: 'new@example.com' } });
+
+      await handlers.inviteUser(req, res);
+
+      expect(deps.sendEmail).toHaveBeenCalledTimes(1);
+      const sent = (deps.sendEmail as jest.Mock).mock.calls[0][0];
+      expect(sent.email).toBe('new@example.com');
+      expect(sent.payload.inviteLink).toMatch(/^https:\/\/chat\.example\.com\/register\?token=/);
+      expect(status).toHaveBeenCalledWith(201);
+      expect(json).toHaveBeenCalledWith({ email: 'new@example.com', message: 'Invitation sent' });
+    });
+
+    it('rejects an invalid email (400) without sending', async () => {
+      const deps = createDeps();
+      const handlers = createAdminUsersHandlers(deps);
+      const { req, res, status } = createReqRes({ body: { email: 'not-an-email' } });
+
+      await handlers.inviteUser(req, res);
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(deps.sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('returns 503 when email is not configured', async () => {
+      delete process.env.EMAIL_HOST;
+      delete process.env.EMAIL_FROM;
+      const deps = createDeps();
+      const handlers = createAdminUsersHandlers(deps);
+      const { req, res, status } = createReqRes({ body: { email: 'new@example.com' } });
+
+      await handlers.inviteUser(req, res);
+
+      expect(status).toHaveBeenCalledWith(503);
+      expect(deps.sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('returns 409 when the user already exists', async () => {
+      const deps = createDeps({
+        findUsers: jest.fn().mockResolvedValue([mockUser({ email: 'new@example.com' })]),
+      });
+      const handlers = createAdminUsersHandlers(deps);
+      const { req, res, status } = createReqRes({ body: { email: 'new@example.com' } });
+
+      await handlers.inviteUser(req, res);
+
+      expect(status).toHaveBeenCalledWith(409);
+      expect(deps.sendEmail).not.toHaveBeenCalled();
     });
   });
 });
