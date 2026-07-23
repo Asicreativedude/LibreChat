@@ -2,7 +2,7 @@
 // openAI endpoint icon renders (client/src/hooks/Endpoint/Icons.tsx) so the shell
 // never shows another vendor's logo. currentColor so it inherits light/dark like
 // the vendor icons it sits beside. The image-slot twin is /assets/o-mark.svg
-// (used by the Operator modelSpec iconURL — kept in sync by eye, one ring).
+// (used by the Operator modelSpec iconURL) — same ring proportions, scaled to its tile.
 export default function OpenIcon({
   size = 25,
   className = '',

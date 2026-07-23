@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
   <!-- Open Brain "O" badge (issue #173): black tile + white ring, matching logo.svg's
        palette. Self-contained so it reads on both the light and dark landing icon
-       backgrounds (rendered as an <img>, object-cover clips to a circle). -->
+       backgrounds (rendered as an <img>, object-cover clips to a circle).
+       Ring proportions match OpenIcon (r 15/41, stroke 5/41) scaled to this 100 tile. -->
   <rect width="100" height="100" fill="#000000"/>
-  <circle cx="50" cy="50" r="26" fill="none" stroke="#ffffff" stroke-width="12"/>
+  <circle cx="50" cy="50" r="37" fill="none" stroke="#ffffff" stroke-width="12"/>
 </svg>

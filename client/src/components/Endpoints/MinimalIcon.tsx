@@ -2,10 +2,10 @@ import { Feather } from 'lucide-react';
 import { EModelEndpoint, alternateName } from 'librechat-data-provider';
 import {
   Sparkles,
+  OpenIcon,
   BedrockIcon,
   AnthropicIcon,
   AzureMinimalIcon,
-  OpenAIMinimalIcon,
   GoogleMinimalIcon,
   CustomMinimalIcon,
 } from '@librechat/client';
@@ -28,7 +28,7 @@ const MinimalIcon: React.FC<IconProps> = (props) => {
       name: props.chatGptLabel ?? 'ChatGPT',
     },
     [EModelEndpoint.openAI]: {
-      icon: <OpenAIMinimalIcon className={iconClassName} />,
+      icon: <OpenIcon className={iconClassName} />,
       name: props.chatGptLabel ?? 'ChatGPT',
     },
     [EModelEndpoint.google]: { icon: <GoogleMinimalIcon />, name: props.modelLabel ?? 'Google' },
