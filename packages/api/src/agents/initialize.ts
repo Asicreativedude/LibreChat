@@ -468,13 +468,30 @@ export async function initializeAgent(
       agent.model_parameters ?? { model: agent.model },
       isInitialAgent === true ? endpointOption?.model_parameters : {},
     ),
-  );
+  ) as Record<string, unknown>;
 
-  const { resendFiles, maxContextTokens, modelOptions } = extractLibreChatParams(
-    _modelOptions as Record<string, unknown>,
-  );
+  /**
+   * Operator "O" model-swap (#177): the initial agent may carry a
+   * conversation-level provider+model pair chosen *under one agent identity*.
+   * The pair rides on `endpointOption.model_parameters` — `provider` alongside
+   * `model` (the model is already merged into `_modelOptions` above). Honor it
+   * as a PAIR, and only when the requested provider is in the configured
+   * `allowedProviders` allow-list, so credentials, endpoint, token accounting
+   * and model all follow the pick. When absent or not allowed, fall back to the
+   * agent's own pinned provider+model (unchanged behavior) — never send the
+   * picked model to the agent's provider. `provider` is our routing directive,
+   * not an LLM parameter, so it's stripped before the options reach the model.
+   */
+  const requestedProvider =
+    isInitialAgent && typeof _modelOptions.provider === 'string' ? _modelOptions.provider : undefined;
+  delete _modelOptions.provider;
+  const providerOverrideActive =
+    requestedProvider != null && allowedProviders.has(requestedProvider);
 
-  const provider = agent.provider;
+  const { resendFiles, maxContextTokens, modelOptions } = extractLibreChatParams(_modelOptions);
+
+  const provider = providerOverrideActive && requestedProvider != null ? requestedProvider : agent.provider;
+  agent.provider = provider;
   agent.endpoint = provider;
 
   /**
@@ -813,7 +830,7 @@ export async function initializeAgent(
 
   const finalModelOptions = {
     ...modelOptions,
-    model: agent.model,
+    model: providerOverrideActive ? (modelOptions.model ?? agent.model) : agent.model,
   };
 
   const options: InitializeResultBase = await getOptions({
