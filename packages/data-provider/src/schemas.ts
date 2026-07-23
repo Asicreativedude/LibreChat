@@ -819,6 +819,13 @@ export const tConversationSchema = z.object({
   modelLabel: z.string().nullable().optional(),
   userLabel: z.string().optional(),
   model: z.string().nullable().optional(),
+  /**
+   * Operator "O" model-pick (#182): a conversation-level provider chosen under
+   * one non-ephemeral agent identity, carried alongside `model` as a pair. The
+   * agents seam (#177) reads `{provider, model}` off `model_parameters` and
+   * strips `provider` before the options reach the model.
+   */
+  provider: z.string().nullable().optional(),
   promptPrefix: z.string().nullable().optional(),
   temperature: z.number().nullable().optional(),
   topP: z.number().optional(),
@@ -1352,7 +1359,11 @@ export type TBanner = z.infer<typeof tBannerSchema>;
 
 export const compactAgentsBaseSchema = tConversationSchema.pick({
   spec: true,
-  // model: true,
+  // Operator "O" model-pick (#182): carry the picked pair to the seam. Both are
+  // nullish-stripped, so a plain agent (no pick) sends neither and behaves as
+  // before; the seam (#177) only honors the model when `provider` is allow-listed.
+  model: true,
+  provider: true,
   iconURL: true,
   greeting: true,
   agent_id: true,

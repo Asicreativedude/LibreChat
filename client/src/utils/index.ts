@@ -18,6 +18,7 @@ export * from './drafts';
 export * from './convos';
 export * from './routes';
 export * from './presets';
+export * from './providers';
 export * from './prompts';
 export * from './textarea';
 export * from './messages';

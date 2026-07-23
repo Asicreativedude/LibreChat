@@ -26,6 +26,7 @@ import { cn, getModelSpec, removeFocusRings } from '~/utils';
 import { useGetStartupConfig } from '~/data-provider';
 import { mainTextareaId, BadgeItem } from '~/common';
 import AttachFileChat from './Files/AttachFileChat';
+import ModelPill from './ModelPill';
 import FileFormChat from './Files/FileFormChat';
 import TextareaHeader from './TextareaHeader';
 import SkillsCommand from './SkillsCommand';
@@ -364,6 +365,7 @@ const ChatForm = memo(function ChatForm({
                   setFilesLoading={setFilesLoading}
                 />
               </div>
+              {isAgentsEndpoint(endpoint) && <ModelPill />}
               <BadgeRow
                 showEphemeralBadges={
                   !!endpoint &&
