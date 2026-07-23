@@ -211,7 +211,7 @@ const Registration: React.FC = () => {
             </div>
           </form>
 
-          <p className="my-4 text-center text-sm font-light text-gray-700 dark:text-white">
+          <p className="my-4 text-center text-sm font-light text-text-primary">
             {localize('com_auth_already_have_account')}{' '}
             <a
               href={loginPage()}

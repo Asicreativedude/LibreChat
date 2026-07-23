@@ -82,15 +82,15 @@ function RequestPasswordReset() {
         {headerText}
       </h1>
       {countdown > 0 && (
-        <p className="text-center text-lg text-gray-600 dark:text-gray-400">
+        <p className="text-center text-lg text-text-secondary">
           {localize('com_auth_email_verification_redirecting', { 0: countdown.toString() })}
         </p>
       )}
       {showResendLink && countdown === 0 && (
-        <p className="text-center text-lg text-gray-600 dark:text-gray-400">
+        <p className="text-center text-lg text-text-secondary">
           {localize('com_auth_email_verification_resend_prompt')}
           <button
-            className="ml-2 text-text-accent hover:underline"
+            className="ms-2 text-text-accent hover:underline"
             onClick={handleResendEmail}
             disabled={resendEmailMutation.isLoading}
           >
@@ -114,7 +114,7 @@ function RequestPasswordReset() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-surface-primary pt-6 sm:pt-0">
-      <div className="absolute bottom-0 left-0 m-4">
+      <div className="absolute bottom-0 start-0 m-4">
         <ThemeSelector />
       </div>
       {verificationStatus ? <VerificationSuccess /> : <VerificationInProgress />}
