@@ -90,7 +90,7 @@ const ThemeSelector = ({ returnThemeOnly }: { returnThemeOnly?: boolean }) => {
 
   return (
     <div className="flex flex-col items-center justify-center bg-white pt-6 dark:bg-gray-900 sm:pt-0">
-      <div className="absolute bottom-0 left-0 m-4">
+      <div className="absolute bottom-0 start-0 m-4">
         <Theme theme={theme} onChange={changeTheme} />
       </div>
       <div role="alert" aria-live="assertive" aria-atomic="true" className="sr-only">
