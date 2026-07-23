@@ -1246,6 +1246,8 @@
   "com_ui_minimal": "Minimal",
   "com_ui_misc": "Misc.",
   "com_ui_model": "Model",
+  "com_ui_model_pick": "Pick model",
+  "com_ui_no_models": "No models available",
   "com_ui_model_parameters": "Model Parameters",
   "com_ui_model_parameters_reset": "Model Parameters have been reset.",
   "com_ui_model_selected": "{{0}} selected",

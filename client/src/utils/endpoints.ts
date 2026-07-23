@@ -14,9 +14,13 @@ import type { LocalizeFunction, IconsRecord } from '~/common';
 import { getTimestampedValue } from './timestamps';
 
 /**
- * Clears model for non-ephemeral agent conversations.
- * Agents use their configured model internally, so the conversation model should be undefined.
- * Mutates the template in place.
+ * Operator "O" model-pick (#182): the conversation model stays selectable under
+ * a non-ephemeral agent so the composer pill can carry a `{provider, model}` pick
+ * to the agents seam (#177). Previously this cleared the model for such agents,
+ * which wiped the picker the moment you landed on the Operator. Kept as a no-op
+ * (rather than removing the six call sites) so every path that used to clear now
+ * preserves the pick; the seam ignores a picked model unless its provider is
+ * allow-listed, so a plain agent with no pick is unaffected.
  */
 export function clearModelForNonEphemeralAgent<
   T extends {
@@ -24,14 +28,8 @@ export function clearModelForNonEphemeralAgent<
     agent_id?: string | null;
     model?: string | null;
   },
->(template: T): void {
-  if (
-    isAgentsEndpoint(template.endpoint) &&
-    template.agent_id &&
-    !isEphemeralAgentId(template.agent_id)
-  ) {
-    template.model = undefined as T['model'];
-  }
+>(_template: T): void {
+  // ponytail: intentional no-op — the pick must survive; see JSDoc above.
 }
 
 export const getEntityName = ({
