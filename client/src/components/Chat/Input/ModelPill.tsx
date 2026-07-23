@@ -7,7 +7,7 @@ import { useGetModelsQuery } from 'librechat-data-provider/react-query';
 import type { MenuItemProps } from '~/common';
 import { useChatContext, useAgentsMapContext } from '~/Providers';
 import { useLocalize, useGetAgentsConfig } from '~/hooks';
-import { cn, providerLabel } from '~/utils';
+import { cn, providerLabel, sortModelsByRecency } from '~/utils';
 
 /**
  * Operator "O" model-pick (#182), variant C composer pill.
@@ -48,7 +48,7 @@ const ProviderModels = React.forwardRef<HTMLDivElement, ProviderModelsProps>(
                   e.stopPropagation();
                   menuStore.toggle();
                 }}
-                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg p-2 hover:bg-surface-hover"
+                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg p-2 text-text-primary hover:bg-surface-hover"
               />
             }
           >
@@ -62,7 +62,7 @@ const ProviderModels = React.forwardRef<HTMLDivElement, ProviderModelsProps>(
             aria-label={providerLabel(provider)}
             className={cn(
               'animate-popover-left z-40 ms-3 flex min-w-[220px] max-w-[320px] flex-col rounded-xl',
-              'border border-border-light bg-presentation p-1.5 shadow-lg',
+              'border border-border-light bg-presentation p-1.5 text-text-primary shadow-lg',
             )}
           >
             <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto">
@@ -137,7 +137,7 @@ function ModelPill() {
       <ProviderModels
         {...props}
         provider={provider}
-        models={modelsConfig?.[provider] ?? []}
+        models={sortModelsByRecency(modelsConfig?.[provider] ?? [])}
         selectedProvider={selectedProvider}
         selectedModel={selectedModel}
         onModelSelect={handleSelect}
