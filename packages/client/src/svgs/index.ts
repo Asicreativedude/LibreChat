@@ -2,6 +2,7 @@ export { default as ArchiveIcon } from './ArchiveIcon';
 export { default as Blocks } from './Blocks';
 export { default as Plugin } from './Plugin';
 export { default as GPTIcon } from './GPTIcon';
+export { default as OpenIcon } from './OpenIcon';
 export { default as EditIcon } from './EditIcon';
 export { default as DataIcon } from './DataIcon';
 export { default as Sidebar } from './Sidebar';

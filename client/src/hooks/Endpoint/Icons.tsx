@@ -1,7 +1,7 @@
 import { Feather } from 'lucide-react';
 import { EModelEndpoint } from 'librechat-data-provider';
 import {
-  GPTIcon,
+  OpenIcon,
   Sparkles,
   BedrockIcon,
   AssistantIcon,
@@ -60,7 +60,8 @@ const Bedrock = ({ className = '' }: IconMapProps) => {
 
 export const icons: IconsRecord = {
   [EModelEndpoint.azureOpenAI]: AzureMinimalIcon,
-  [EModelEndpoint.openAI]: GPTIcon,
+  // Open Brain: studio "O" mark, never OpenAI's flower (issue #173).
+  [EModelEndpoint.openAI]: OpenIcon,
   [EModelEndpoint.anthropic]: AnthropicIcon,
   [EModelEndpoint.google]: GoogleMinimalIcon,
   [EModelEndpoint.custom]: CustomMinimalIcon,

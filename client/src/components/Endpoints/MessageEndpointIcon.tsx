@@ -3,7 +3,7 @@ import { Feather } from 'lucide-react';
 import { EModelEndpoint, isAssistantsEndpoint, alternateName } from 'librechat-data-provider';
 import {
   Plugin,
-  GPTIcon,
+  OpenIcon,
   PaLMIcon,
   CodeyIcon,
   GeminiIcon,
@@ -129,7 +129,7 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
       name: 'ChatGPT',
     },
     [EModelEndpoint.openAI]: {
-      icon: <GPTIcon size={size * 0.5555555555555556} />,
+      icon: <OpenIcon size={size * 0.5555555555555556} />,
       bg: getOpenAIColor(model),
       name: 'ChatGPT',
     },
@@ -151,7 +151,7 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
       icon: <CustomMinimalIcon size={size * 0.7} />,
       name: 'Custom',
     },
-    null: { icon: <GPTIcon size={size * 0.7} />, bg: 'grey', name: 'N/A' },
+    null: { icon: <OpenIcon size={size * 0.7} />, bg: 'grey', name: 'N/A' },
     default: {
       icon: (
         <div className="h-6 w-6">
