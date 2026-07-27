@@ -84,7 +84,10 @@ export default defineConfig(({ command }) => ({
         ],
         globIgnores: ['images/**/*', '**/*.map', 'index.html', 'assets/rum.*.js'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
-        navigateFallbackDenylist: [/^\/oauth/, /^\/api/],
+        // /admin is a separate app (team-admin) reverse-proxied by Caddy, not an
+        // SPA route — keep the service worker's navigation fallback off it, or it
+        // serves the LibreChat shell and the sub-app 404s.
+        navigateFallbackDenylist: [/^\/oauth/, /^\/api/, /^\/admin/],
       },
       includeAssets: [],
       manifest: {
