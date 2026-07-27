@@ -44,7 +44,7 @@ const RecoilToggle: React.FC<
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-2">
         <div id={labelId}>
           {strongLabel ? <strong>{localize(localizationKey)}</strong> : localize(localizationKey)}
         </div>
@@ -55,7 +55,7 @@ const RecoilToggle: React.FC<
         checked={switchState}
         onCheckedChange={handleCheckedChange}
         disabled={disabled}
-        className="ml-4"
+        className="ms-4"
         data-testid={switchId}
         aria-labelledby={labelId}
       />
@@ -86,7 +86,7 @@ const JotaiToggle: React.FC<
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-2">
         <div id={labelId}>
           {strongLabel ? <strong>{localize(localizationKey)}</strong> : localize(localizationKey)}
         </div>
@@ -97,7 +97,7 @@ const JotaiToggle: React.FC<
         checked={switchState}
         onCheckedChange={handleCheckedChange}
         disabled={disabled}
-        className="ml-4"
+        className="ms-4"
         data-testid={switchId}
         aria-labelledby={labelId}
       />

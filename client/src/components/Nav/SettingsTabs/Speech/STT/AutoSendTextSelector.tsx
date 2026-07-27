@@ -53,14 +53,14 @@ export default function AutoSendTextSelector() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <div id={labelId}>{localize('com_nav_auto_send_text')}</div>
         </div>
         <Switch
           id="autoSendTextToggle"
           checked={isEnabled}
           onCheckedChange={handleToggle}
-          className="ml-4"
+          className="ms-4"
           data-testid="autoSendTextToggle"
           aria-labelledby={labelId}
           disabled={!speechToText}
@@ -86,7 +86,7 @@ export default function AutoSendTextSelector() {
               min={0}
               max={60}
               step={1}
-              className="ml-4 flex h-4 w-24"
+              className="ms-4 flex h-4 w-24"
               disabled={!speechToText || !isEnabled}
               aria-labelledby="auto-send-delay-label"
             />
@@ -102,7 +102,7 @@ export default function AutoSendTextSelector() {
                 defaultTextProps,
                 cn(
                   optionText,
-                  'reset-rc-number-input reset-rc-number-input-text-right h-auto w-12 border-0 group-hover/temp:border-gray-200',
+                  'reset-rc-number-input reset-rc-number-input-text-end h-auto w-12 border-0 group-hover/temp:border-gray-200',
                 ),
               )}
             />

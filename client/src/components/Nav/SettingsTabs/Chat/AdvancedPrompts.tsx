@@ -29,7 +29,7 @@ export default function AdvancedPrompts() {
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-2">
         <div id={labelId}>{localize('com_nav_advanced_prompts')}</div>
         <InfoHoverCard side={ESide.Bottom} text={localize('com_nav_advanced_prompts_desc')} />
       </div>
@@ -37,7 +37,7 @@ export default function AdvancedPrompts() {
         id={rootId}
         checked={isAdvanced}
         onCheckedChange={handleChange}
-        className="ml-4"
+        className="ms-4"
         data-testid="advancedPrompts"
         aria-labelledby={labelId}
       />

@@ -20,7 +20,7 @@ export default function SaveDraft({
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-2">
         <div>{localize('com_nav_show_thinking')}</div>
         <InfoHoverCard side={ESide.Bottom} text={localize('com_nav_info_show_thinking')} />
       </div>
@@ -28,7 +28,7 @@ export default function SaveDraft({
         id="showThinking"
         checked={showThinking}
         onCheckedChange={handleCheckedChange}
-        className="ml-4"
+        className="ms-4"
         data-testid="showThinking"
         aria-label={localize('com_nav_show_thinking')}
       />

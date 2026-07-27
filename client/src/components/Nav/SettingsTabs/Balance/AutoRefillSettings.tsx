@@ -79,7 +79,7 @@ const AutoRefillSettings: React.FC<AutoRefillSettingsProps> = ({
         </span>
       </div>
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Label className="font-light">{localize('com_nav_balance_next_refill')}</Label>
           <InfoHoverCard side={ESide.Bottom} text={localize('com_nav_balance_next_refill_info')} />
         </div>

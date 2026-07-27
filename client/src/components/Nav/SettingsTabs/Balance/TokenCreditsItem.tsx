@@ -12,7 +12,7 @@ const TokenCreditsItem: React.FC<TokenCreditsItemProps> = ({ tokenCredits }) => 
   return (
     <div className="flex items-center justify-between">
       {/* Left Section: Label */}
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-2">
         <Label className="font-light">{localize('com_nav_balance')}</Label>
         <InfoHoverCard side={ESide.Bottom} text={localize('com_nav_info_balance')} />
       </div>

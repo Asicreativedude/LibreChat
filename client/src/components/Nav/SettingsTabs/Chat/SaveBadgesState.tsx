@@ -20,7 +20,7 @@ export default function SaveBadgesState({
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-2">
         <div>{localize('com_nav_save_badges_state')}</div>
         <InfoHoverCard side={ESide.Bottom} text={localize('com_nav_info_save_badges_state')} />
       </div>
@@ -28,7 +28,7 @@ export default function SaveBadgesState({
         id="saveBadgesState"
         checked={saveBadgesState}
         onCheckedChange={handleCheckedChange}
-        className="ml-4"
+        className="ms-4"
         data-testid="saveBadgesState"
         aria-label={localize('com_nav_save_badges_state')}
       />

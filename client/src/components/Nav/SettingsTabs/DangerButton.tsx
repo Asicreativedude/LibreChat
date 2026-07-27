@@ -34,7 +34,7 @@ const DangerButton = (props: TDangerButtonProps, ref: ForwardedRef<HTMLButtonEle
   return (
     <div className="flex items-center justify-between">
       {showText && (
-        <div className={`flex items-center ${infoDescriptionCode ? 'space-x-2' : ''}`}>
+        <div className={`flex items-center ${infoDescriptionCode ? 'gap-2' : ''}`}>
           <div>{localize(infoTextCode)}</div>
           {infoDescriptionCode && <InfoHoverCard side={ESide.Bottom} text={infoDescriptionCode} />}
         </div>

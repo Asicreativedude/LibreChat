@@ -226,7 +226,7 @@ function Avatar() {
                     </Label>
                     <span className="text-sm text-text-secondary">{Math.round(scale * 100)}%</span>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center gap-3">
                     <Button
                       type="button"
                       variant="outline"
@@ -262,12 +262,12 @@ function Avatar() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center space-x-3">
+                <div className="flex items-center justify-center gap-3">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleRotate}
-                    className="flex items-center space-x-2"
+                    className="flex items-center gap-2"
                     aria-label={localize('com_ui_rotate_90')}
                   >
                     <RotateCw className="h-4 w-4" aria-hidden="true" />
@@ -277,7 +277,7 @@ function Avatar() {
                     type="button"
                     variant="outline"
                     onClick={handleReset}
-                    className="flex items-center space-x-2"
+                    className="flex items-center gap-2"
                     aria-label={localize('com_ui_reset_adjustments')}
                   >
                     <X className="h-4 w-4" aria-hidden="true" />
@@ -292,7 +292,7 @@ function Avatar() {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-6 flex w-full space-x-3">
+              <div className="mt-6 flex w-full gap-3">
                 <Button
                   type="button"
                   variant="outline"

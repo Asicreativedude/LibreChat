@@ -27,7 +27,7 @@ export default function DecibelSelector() {
           min={-100}
           max={-30}
           step={1}
-          className="ml-4 flex h-4 w-24"
+          className="ms-4 flex h-4 w-24"
           disabled={!speechToText}
           aria-labelledby="decibel-selector-label"
         />
@@ -43,7 +43,7 @@ export default function DecibelSelector() {
             defaultTextProps,
             cn(
               optionText,
-              'reset-rc-number-input reset-rc-number-input-text-right h-auto w-12 border-0 group-hover/temp:border-gray-200',
+              'reset-rc-number-input reset-rc-number-input-text-end h-auto w-12 border-0 group-hover/temp:border-gray-200',
             ),
           )}
         />
