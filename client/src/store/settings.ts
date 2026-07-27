@@ -31,7 +31,11 @@ const localStorageAtoms = {
   // Chat settings
   enterToSend: atomWithLocalStorage('enterToSend', true),
   maximizeChatSpace: atomWithLocalStorage('maximizeChatSpace', false),
-  chatDirection: atomWithLocalStorage('chatDirection', 'LTR'),
+  // Seed from the UI locale's direction (i18n sets <html dir>) so a Hebrew user gets an
+  // RTL composer without opening Settings. The manual toggle still persists and overrides.
+  chatDirection: atomWithLocalStorage('chatDirection', () =>
+    typeof document !== 'undefined' && document.documentElement.dir === 'rtl' ? 'RTL' : 'LTR',
+  ),
   autoExpandTools: atomWithLocalStorage(LocalStorageKeys.AUTO_EXPAND_TOOLS, false),
   saveDrafts: atomWithLocalStorage('saveDrafts', true),
   showScrollButton: atomWithLocalStorage('showScrollButton', true),
