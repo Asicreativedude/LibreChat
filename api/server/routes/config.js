@@ -136,6 +136,9 @@ function buildPostLoginPayload() {
       isEnabled(process.env.SHOW_BIRTHDAY_ICON) ||
       process.env.SHOW_BIRTHDAY_ICON === '',
     helpAndFaqURL: process.env.HELP_AND_FAQ_URL || 'https://librechat.ai',
+    // Origin of the standalone team-admin panel (Open Brain #198). Undefined when
+    // unset → the role-gated nav item never renders. Only ADMIN users see it.
+    adminPanelURL: process.env.ADMIN_PANEL_URL,
     sharedLinksEnabled,
     publicSharedLinksEnabled,
     openidReuseTokens,
