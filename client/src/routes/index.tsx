@@ -20,6 +20,7 @@ import dashboardRoutes from './Dashboard';
 import ShareRoute from './ShareRoute';
 import ChatRoute from './ChatRoute';
 import Onboarding from './Onboarding';
+import TeamAdmin from './TeamAdmin';
 import Search from './Search';
 import Root from './Root';
 
@@ -128,6 +129,10 @@ export const router = createBrowserRouter(
             {
               path: 'onboarding',
               element: <Onboarding />,
+            },
+            {
+              path: 'team',
+              element: <TeamAdmin />,
             },
             {
               path: 'prompts',

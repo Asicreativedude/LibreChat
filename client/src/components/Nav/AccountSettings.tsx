@@ -1,6 +1,6 @@
 import { useState, memo, useRef } from 'react';
 import * as Menu from '@ariakit/react/menu';
-import { FileText, LogOut, Users } from 'lucide-react';
+import { FileText, LogOut } from 'lucide-react';
 import { LinkIcon, GearIcon, DropdownMenuSeparator, Avatar } from '@librechat/client';
 import { MyFilesModal } from '~/components/Chat/Input/Files/MyFilesModal';
 import { useGetStartupConfig, useGetUserBalance } from '~/data-provider';
@@ -80,15 +80,6 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
           >
             <LinkIcon aria-hidden="true" />
             {localize('com_nav_help_faq')}
-          </Menu.MenuItem>
-        )}
-        {user?.role === 'ADMIN' && startupConfig?.adminPanelURL && (
-          <Menu.MenuItem
-            onClick={() => window.open(startupConfig.adminPanelURL, '_blank')}
-            className="select-item text-sm"
-          >
-            <Users className="icon-md" aria-hidden="true" />
-            {localize('com_nav_team_management')}
           </Menu.MenuItem>
         )}
         <Menu.MenuItem onClick={() => setShowSettings(true)} className="select-item text-sm">

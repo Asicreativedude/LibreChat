@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
-import { MessagesSquare, GraduationCap } from 'lucide-react';
+import { MessagesSquare, GraduationCap, Users } from 'lucide-react';
 import { useUserKeyQuery } from 'librechat-data-provider/react-query';
 import { getConfigDefaults, getEndpointField } from 'librechat-data-provider';
 import type { TEndpointsConfig } from 'librechat-data-provider';
@@ -9,12 +9,14 @@ import type { NavLink } from '~/common';
 import ConversationsSection from '~/components/UnifiedSidebar/ConversationsSection';
 import { useGetEndpointsQuery, useGetStartupConfig } from '~/data-provider';
 import useSideNavLinks from '~/hooks/Nav/useSideNavLinks';
+import { useAuthContext } from '~/hooks/AuthContext';
 import store from '~/store';
 
 const defaultInterface = getConfigDefaults().interface;
 
 export default function useUnifiedSidebarLinks() {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   const conversation = useRecoilValue(store.conversationByIndex(0));
   const endpoint = conversation?.endpoint;
   const { data: startupConfig } = useGetStartupConfig();
@@ -69,14 +71,32 @@ export default function useUnifiedSidebarLinks() {
       onClick: () => navigate('/onboarding'),
     };
 
+    // Open Brain fork edit (open-brain #218): the team-admin pane, admins only.
+    // UI gate — the handoff re-checks ACCESS_ADMIN server-side before minting.
+    const teamAdminLink: NavLink | null =
+      user?.role === 'ADMIN'
+        ? {
+            title: 'com_nav_team_management',
+            label: '',
+            icon: Users,
+            id: 'team-admin',
+            onClick: () => navigate('/team'),
+          }
+        : null;
+
     // Open Brain: studio users only need chat + files + onboarding. Hide the rest
     // of LibreChat's side panels (prompts/agents/memories/bookmarks/mcp/params) from
     // the sidebar. ponytail: UI allowlist here, not backend RBAC — add ids to reveal more.
     const allowedSideLinks = new Set(['files']);
     const sideLinks = sideNavLinks.filter((link) => allowedSideLinks.has(link.id ?? ''));
 
-    return [conversationLink, onboardingLink, ...sideLinks];
-  }, [sideNavLinks, navigate]);
+    return [
+      conversationLink,
+      onboardingLink,
+      ...(teamAdminLink ? [teamAdminLink] : []),
+      ...sideLinks,
+    ];
+  }, [sideNavLinks, navigate, user?.role]);
 
   return links;
 }
