@@ -23,15 +23,21 @@ import {
   Account,
   About,
 } from './SettingsTabs';
+import { useTranslation } from 'react-i18next';
 import usePersonalizationAccess from '~/hooks/usePersonalizationAccess';
 import { useLocalize, TranslationKeys } from '~/hooks';
 import { useGetStartupConfig } from '~/data-provider';
+import { isRTLLang } from '~/locales/i18n';
 import { cn } from '~/utils';
 
 export default function Settings({ open, onOpenChange }: TDialogProps) {
   const isSmallScreen = useMediaQuery('(max-width: 767px)');
   const { data: startupConfig } = useGetStartupConfig();
   const localize = useLocalize();
+  const { i18n } = useTranslation();
+  // Radix Tabs.Root stamps dir="ltr" by default, pinning the rail and every setting
+  // row LTR even under document RTL. Feed it the active language's direction.
+  const dir = isRTLLang(i18n.language) ? 'rtl' : 'ltr';
   const [activeTab, setActiveTab] = useState(SettingsTabValues.GENERAL);
   const tabRefs = useRef({});
   const { hasAnyPersonalizationFeature, hasMemoryOptOut } = usePersonalizationAccess();
@@ -209,6 +215,7 @@ export default function Settings({ open, onOpenChange }: TDialogProps) {
                   onValueChange={handleTabChange}
                   className="flex flex-col gap-10 md:flex-row"
                   orientation="vertical"
+                  dir={dir}
                 >
                   <Tabs.List
                     aria-label="Settings"
