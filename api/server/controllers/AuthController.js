@@ -6,6 +6,7 @@ const {
   isEnabled,
   findOpenIDUser,
   getOpenIdIssuer,
+  getInviteRole,
   buildOpenIDRefreshParams,
 } = require('@librechat/api');
 const {
@@ -33,7 +34,10 @@ const OPENID_REUSE_MAX_SESSION_AGE_MS = 15 * 60 * 1000;
 
 const registrationController = async (req, res) => {
   try {
-    const response = await registerUser(req.body);
+    // Role is applied ONLY from the server-stored invite (set by checkInviteUser),
+    // never from the registration body — an uninvited POST can't self-assign a role.
+    const invitedRole = req.invite ? getInviteRole(req.invite) : undefined;
+    const response = await registerUser(req.body, invitedRole ? { role: invitedRole } : {});
     const { status, message } = response;
     res.status(status).send({ message });
   } catch (err) {

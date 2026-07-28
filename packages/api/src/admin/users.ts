@@ -3,6 +3,7 @@ import { PrincipalType, SystemRoles } from 'librechat-data-provider';
 import { logger, isValidObjectIdString } from '@librechat/data-schemas';
 import type {
   IUser,
+  IRole,
   IConfig,
   AdminUserListItem,
   AdminUserSearchResult,
@@ -59,6 +60,8 @@ export interface AdminUsersDeps {
   /** Token persistence for the invite (mirrors `checkInviteUser`'s deps). */
   createToken: InviteDeps['createToken'];
   findToken: InviteDeps['findToken'];
+  /** Role lookup — validates the invite's intended role against existing roles. */
+  getRoleByName: (roleName: string) => Promise<IRole | null>;
   /** Nodemailer/Mailgun send — api-side, injected. */
   sendEmail: (params: InviteEmailParams) => Promise<unknown>;
 }
@@ -72,15 +75,21 @@ export function createAdminUsersHandlers(deps: AdminUsersDeps) {
     deleteAclEntries,
     createToken,
     findToken,
+    getRoleByName,
     sendEmail,
   } = deps;
 
   async function inviteUserHandler(req: ServerRequest, res: Response) {
     try {
-      const { email: rawEmail } = req.body as { email?: string };
+      const { email: rawEmail, role: rawRole } = req.body as { email?: string; role?: string };
       const email = typeof rawEmail === 'string' ? rawEmail.trim() : '';
       if (!email || !email.includes('@')) {
         return res.status(400).json({ error: 'A valid email address is required' });
+      }
+
+      const role = typeof rawRole === 'string' && rawRole.trim() ? rawRole.trim() : 'USER';
+      if (!(await getRoleByName(role))) {
+        return res.status(400).json({ error: `Unknown role: ${role}` });
       }
 
       if (!checkEmailConfig()) {
@@ -92,7 +101,7 @@ export function createAdminUsersHandlers(deps: AdminUsersDeps) {
         return res.status(409).json({ error: 'A user with that email already exists' });
       }
 
-      const token = await createInvite(email, { createToken, findToken });
+      const token = await createInvite(email, { createToken, findToken }, role);
       if (typeof token !== 'string') {
         return res.status(500).json({ error: 'Failed to create invite' });
       }

@@ -20,6 +20,7 @@ const handlers = createAdminUsersHandlers({
   deleteAclEntries: db.deleteAclEntries,
   createToken: db.createToken,
   findToken: db.findToken,
+  getRoleByName: db.getRoleByName,
   sendEmail,
 });
 

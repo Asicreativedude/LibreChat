@@ -61,6 +61,7 @@ function createDeps(overrides: Partial<AdminUsersDeps> = {}): AdminUsersDeps {
     deleteAclEntries: jest.fn().mockResolvedValue(undefined),
     createToken: jest.fn().mockResolvedValue({}),
     findToken: jest.fn().mockResolvedValue(null),
+    getRoleByName: jest.fn().mockResolvedValue({ name: 'USER' }),
     sendEmail: jest.fn().mockResolvedValue({}),
     ...overrides,
   };
@@ -580,6 +581,51 @@ describe('createAdminUsersHandlers', () => {
 
       expect(status).toHaveBeenCalledWith(409);
       expect(deps.sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('persists the intended role in the invite token metadata', async () => {
+      const createToken = jest.fn().mockResolvedValue({});
+      const deps = createDeps({ createToken });
+      const handlers = createAdminUsersHandlers(deps);
+      const { req, res, status } = createReqRes({
+        body: { email: 'new@example.com', role: 'ADMIN' },
+      });
+
+      await handlers.inviteUser(req, res);
+
+      expect(deps.getRoleByName).toHaveBeenCalledWith('ADMIN');
+      expect(createToken).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: { role: 'ADMIN' } }),
+      );
+      expect(status).toHaveBeenCalledWith(201);
+    });
+
+    it('defaults to USER when no role is given', async () => {
+      const createToken = jest.fn().mockResolvedValue({});
+      const deps = createDeps({ createToken });
+      const handlers = createAdminUsersHandlers(deps);
+      const { req, res } = createReqRes({ body: { email: 'new@example.com' } });
+
+      await handlers.inviteUser(req, res);
+
+      expect(deps.getRoleByName).toHaveBeenCalledWith('USER');
+      expect(createToken).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: { role: 'USER' } }),
+      );
+    });
+
+    it('rejects an unknown role (400) without sending', async () => {
+      const deps = createDeps({ getRoleByName: jest.fn().mockResolvedValue(null) });
+      const handlers = createAdminUsersHandlers(deps);
+      const { req, res, status } = createReqRes({
+        body: { email: 'new@example.com', role: 'NOPE' },
+      });
+
+      await handlers.inviteUser(req, res);
+
+      expect(status).toHaveBeenCalledWith(400);
+      expect(deps.sendEmail).not.toHaveBeenCalled();
+      expect(deps.createToken).not.toHaveBeenCalled();
     });
   });
 });
