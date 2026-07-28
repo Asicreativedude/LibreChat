@@ -9,8 +9,12 @@ const { requireJwtAuth } = require('~/server/middleware');
  * through LibreChat, so the Shell can't inject a request header onto the iframe's
  * subrequests. Instead the Shell mints the Dashboard's own session cookie: the
  * `ob_session` value is exactly the construct the Dashboard's `signSession`
- * produces — `base64url(email).HMAC_sha256(payload, SESSION_SECRET)` — so holding
- * the shared SESSION_SECRET is the whole handoff, no new crypto.
+ * produces — `base64url(JSON({email, expiresAt})).HMAC_sha256(payload,
+ * SESSION_SECRET)` — so holding the shared SESSION_SECRET is the whole handoff,
+ * no new crypto. The lifetime is signed INTO the payload (open-brain #219), not
+ * just a cookie attribute: the Dashboard's verify rejects an elapsed `expiresAt`,
+ * so a captured cookie value stops working when it expires, not merely when the
+ * browser drops it.
  *
  * The `/onboarding` client route POSTs here (with the Bearer JWT) before showing
  * the iframe; the Set-Cookie lands on the shared origin (Path=/), and the
@@ -25,14 +29,20 @@ router.post('/', requireJwtAuth, (req, res) => {
   if (!secret || secret.length < 16 || !email) {
     return res.status(503).json({ message: 'handoff unavailable' });
   }
-  const payload = Buffer.from(email, 'utf8').toString('base64url');
+  // 8h — must match the Dashboard's SESSION_TTL_MS; a shorter/longer mint here
+  // just moves the wall the Dashboard's verify enforces.
+  const ttlMs = 1000 * 60 * 60 * 8;
+  const payload = Buffer.from(
+    JSON.stringify({ email, expiresAt: Date.now() + ttlMs }),
+    'utf8',
+  ).toString('base64url');
   const mac = createHmac('sha256', secret).update(payload).digest('base64url');
   res.cookie('ob_session', `${payload}.${mac}`, {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
-    maxAge: 1000 * 60 * 60 * 8,
+    maxAge: ttlMs,
   });
   return res.status(204).end();
 });
