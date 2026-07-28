@@ -10,6 +10,7 @@
  * cookie as the verified actor — the single-login handoff, no login in the frame.
  */
 import { useEffect, useState } from 'react';
+import { Spinner } from '@librechat/client';
 import { useAuthContext, useLocalize } from '~/hooks';
 
 export default function Onboarding() {
@@ -35,8 +36,19 @@ export default function Onboarding() {
     };
   }, [token]);
 
+  // Never render an empty pane: until the handoff settles — or forever, if `token` is
+  // falsy and the effect early-returns (open-brain #214) — show a spinner, not a void.
   if (!ready) {
-    return null;
+    return (
+      <div
+        className="flex h-full w-full items-center justify-center"
+        aria-live="polite"
+        role="status"
+      >
+        <Spinner className="text-text-primary" />
+        <span className="sr-only">{localize('com_ui_loading')}</span>
+      </div>
+    );
   }
 
   return (
