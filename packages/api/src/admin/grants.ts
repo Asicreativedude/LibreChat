@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { PrincipalType } from 'librechat-data-provider';
 import {
   logger,
@@ -7,7 +8,6 @@ import {
 } from '@librechat/data-schemas';
 import type { ISystemGrant, SystemCapability } from '@librechat/data-schemas';
 import type { Response } from 'express';
-import type { Types } from 'mongoose';
 import type { ResolvedPrincipal } from '~/types/principal';
 import type { ServerRequest } from '~/types/http';
 import { parsePagination } from './pagination';
@@ -72,10 +72,14 @@ export interface AdminGrantsDeps {
     tenantId?: string;
   }) => ResolvedPrincipal[] | undefined;
   checkRoleExists?: (roleId: string) => Promise<boolean>;
+  checkUserExists?: (userId: string) => Promise<boolean>;
 }
 
-/** Currently ROLE-only; Record/Set structure preserved for future principal-type expansion. */
-export type GrantPrincipalType = PrincipalType.ROLE;
+/**
+ * Grantable principal types. USER grants are gated by MANAGE_USERS / READ_USERS
+ * (see the *_CAPABILITY_BY_TYPE maps), not MANAGE_ROLES. GROUP remains unsupported.
+ */
+export type GrantPrincipalType = PrincipalType.ROLE | PrincipalType.USER;
 
 /** Creates admin grant handlers with dependency injection for the /api/admin/grants routes. */
 export function createAdminGrantsHandlers(deps: AdminGrantsDeps) {
@@ -91,14 +95,17 @@ export function createAdminGrantsHandlers(deps: AdminGrantsDeps) {
     getHeldCapabilities,
     getCachedPrincipals,
     checkRoleExists,
+    checkUserExists,
   } = deps;
 
   const MANAGE_CAPABILITY_BY_TYPE: Record<GrantPrincipalType, SystemCapability> = {
     [PrincipalType.ROLE]: SystemCapabilities.MANAGE_ROLES,
+    [PrincipalType.USER]: SystemCapabilities.MANAGE_USERS,
   };
 
   const READ_CAPABILITY_BY_TYPE: Record<GrantPrincipalType, SystemCapability> = {
     [PrincipalType.ROLE]: SystemCapabilities.READ_ROLES,
+    [PrincipalType.USER]: SystemCapabilities.READ_USERS,
   };
 
   const VALID_PRINCIPAL_TYPES = new Set(
@@ -143,6 +150,9 @@ export function createAdminGrantsHandlers(deps: AdminGrantsDeps) {
     }
     if (!principalId) {
       return 'Principal ID is required';
+    }
+    if (principalType === PrincipalType.USER && !Types.ObjectId.isValid(principalId)) {
+      return 'Invalid principal ID';
     }
     return null;
   }
@@ -328,11 +338,17 @@ export function createAdminGrantsHandlers(deps: AdminGrantsDeps) {
         return res.status(403).json({ error: 'Cannot grant a capability you do not possess' });
       }
 
-      /** Reject grants targeting non-existent roles when the dep is provided. */
-      if (checkRoleExists) {
+      /** Reject grants targeting non-existent principals when the dep is provided. */
+      if (principalType === PrincipalType.ROLE && checkRoleExists) {
         const exists = await checkRoleExists(principalId);
         if (!exists) {
           return res.status(400).json({ error: 'Role not found' });
+        }
+      }
+      if (principalType === PrincipalType.USER && checkUserExists) {
+        const exists = await checkUserExists(principalId);
+        if (!exists) {
+          return res.status(400).json({ error: 'User not found' });
         }
       }
 

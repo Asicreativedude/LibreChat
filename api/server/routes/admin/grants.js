@@ -21,6 +21,7 @@ const handlers = createAdminGrantsHandlers({
   getHeldCapabilities: db.getHeldCapabilities,
   getCachedPrincipals,
   checkRoleExists: async (name) => (await db.getRoleByName(name)) != null,
+  checkUserExists: async (userId) => (await db.getUserById(userId, '_id')) != null,
 });
 
 router.use(requireJwtAuth, requireAdminAccess);
