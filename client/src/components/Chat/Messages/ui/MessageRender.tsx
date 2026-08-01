@@ -6,6 +6,7 @@ import type { TMessage } from 'librechat-data-provider';
 import type { TMessageProps, TMessageIcon, TMessageChatContext } from '~/common';
 import { cn, getHeaderPrefixForScreenReader, getMessageAriaLabel } from '~/utils';
 import MessageContent from '~/components/Chat/Messages/Content/MessageContent';
+import MessageTimestamp from '~/components/Chat/Messages/ui/MessageTimestamp';
 import { useLocalize, useMessageActions, useContentMetadata } from '~/hooks';
 import PlaceholderRow from '~/components/Chat/Messages/ui/PlaceholderRow';
 import ModelTag from '~/components/Chat/Messages/ui/ModelTag';
@@ -74,6 +75,7 @@ function areMessageRenderPropsEqual(prev: MessageRenderProps, next: MessageRende
     prevMsg.text === nextMsg.text &&
     prevMsg.error === nextMsg.error &&
     prevMsg.unfinished === nextMsg.unfinished &&
+    prevMsg.createdAt === nextMsg.createdAt &&
     prevMsg.depth === nextMsg.depth &&
     prevMsg.isCreatedByUser === nextMsg.isCreatedByUser &&
     (prevMsg.children?.length ?? 0) === (nextMsg.children?.length ?? 0) &&
@@ -82,7 +84,8 @@ function areMessageRenderPropsEqual(prev: MessageRenderProps, next: MessageRende
     prevMsg.endpoint === nextMsg.endpoint &&
     prevMsg.iconURL === nextMsg.iconURL &&
     prevMsg.feedback?.rating === nextMsg.feedback?.rating &&
-    (prevMsg.files?.length ?? 0) === (nextMsg.files?.length ?? 0)
+    (prevMsg.files?.length ?? 0) === (nextMsg.files?.length ?? 0) &&
+    (prevMsg.quotes?.length ?? 0) === (nextMsg.quotes?.length ?? 0)
   );
 }
 
@@ -181,7 +184,7 @@ const MessageRender = memo(function MessageRender({
   };
 
   const conditionalClasses = {
-    focus: 'focus:outline-none focus:ring-2 focus:ring-border-xheavy',
+    focus: 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-xheavy',
   };
 
   return (
@@ -218,6 +221,7 @@ const MessageRender = memo(function MessageRender({
               isAgentsEndpoint(msg?.endpoint ?? conversation?.endpoint) && (
                 <ModelTag model={msg?.model} />
               )}
+            <MessageTimestamp value={msg.createdAt ?? msg.clientTimestamp} />
           </h2>
         )}
 

@@ -1,152 +1,342 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Import your JSON translations
 import translationEn from './en/translation.json';
-import translationAr from './ar/translation.json';
-import translationCa from './ca/translation.json';
-import translationCs from './cs/translation.json';
-import translationDa from './da/translation.json';
-import translationDe from './de/translation.json';
-import translationEs from './es/translation.json';
-import translationEt from './et/translation.json';
-import translationFa from './fa/translation.json';
-import translationFr from './fr/translation.json';
-import translationIt from './it/translation.json';
-import translationPl from './pl/translation.json';
-import translationPt_BR from './pt-BR/translation.json';
-import translationPt_PT from './pt-PT/translation.json';
-import translationRu from './ru/translation.json';
-import translationJa from './ja/translation.json';
-import translationKa from './ka/translation.json';
-import translationSv from './sv/translation.json';
-import translationKo from './ko/translation.json';
-import translationLt from './lt/translation.json';
-import translationLv from './lv/translation.json';
-import translationTh from './th/translation.json';
-import translationTr from './tr/translation.json';
-import translationUg from './ug/translation.json';
-import translationVi from './vi/translation.json';
-import translationNl from './nl/translation.json';
-import translationNn from './nn/translation.json';
-import translationId from './id/translation.json';
-import translationIs from './is/translation.json';
-import translationHe from './he/translation.json';
-import translationHu from './hu/translation.json';
-import translationHy from './hy/translation.json';
-import translationFi from './fi/translation.json';
-import translationZh_Hans from './zh-Hans/translation.json';
-import translationZh_Hant from './zh-Hant/translation.json';
-import translationSk from './sk/translation.json';
-import translationBo from './bo/translation.json';
-import translationUk from './uk/translation.json';
-import translationBs from './bs/translation.json';
-import translationNb from './nb/translation.json';
-import translationSl from './sl/translation.json';
 
 export const defaultNS = 'translation';
 
+export const supportedLocales = [
+  'ar',
+  'bo',
+  'bs',
+  'ca',
+  'cs',
+  'da',
+  'de',
+  'en',
+  'es',
+  'et',
+  'fa',
+  'fi',
+  'fr',
+  'he',
+  'hu',
+  'hy',
+  'id',
+  'is',
+  'it',
+  'ja',
+  'ka',
+  'ko',
+  'lt',
+  'lv',
+  'nb',
+  'nl',
+  'nn',
+  'pl',
+  'pt-BR',
+  'pt-PT',
+  'ru',
+  'sk',
+  'sl',
+  'sv',
+  'th',
+  'tr',
+  'ug',
+  'uk',
+  'vi',
+  'zh-Hans',
+  'zh-Hant',
+] as const;
+
+export type SupportedLocale = (typeof supportedLocales)[number];
+export type TranslationResource = Record<string, string>;
+
 export const resources = {
   en: { translation: translationEn },
-  ar: { translation: translationAr },
-  bs: { translation: translationBs },
-  ca: { translation: translationCa },
-  cs: { translation: translationCs },
-  'zh-Hans': { translation: translationZh_Hans },
-  'zh-Hant': { translation: translationZh_Hant },
-  da: { translation: translationDa },
-  de: { translation: translationDe },
-  es: { translation: translationEs },
-  et: { translation: translationEt },
-  fa: { translation: translationFa },
-  fr: { translation: translationFr },
-  it: { translation: translationIt },
-  nb: { translation: translationNb },
-  pl: { translation: translationPl },
-  'pt-BR': { translation: translationPt_BR },
-  'pt-PT': { translation: translationPt_PT },
-  ru: { translation: translationRu },
-  ja: { translation: translationJa },
-  ka: { translation: translationKa },
-  sv: { translation: translationSv },
-  ko: { translation: translationKo },
-  lt: { translation: translationLt },
-  lv: { translation: translationLv },
-  th: { translation: translationTh },
-  tr: { translation: translationTr },
-  ug: { translation: translationUg },
-  vi: { translation: translationVi },
-  nl: { translation: translationNl },
-  nn: { translation: translationNn },
-  id: { translation: translationId },
-  is: { translation: translationIs },
-  he: { translation: translationHe },
-  hu: { translation: translationHu },
-  hy: { translation: translationHy },
-  fi: { translation: translationFi },
-  sk: { translation: translationSk },
-  bo: { translation: translationBo },
-  sl: { translation: translationSl },
-  uk: { translation: translationUk },
 } as const;
 
-/** Base language codes that render right-to-left. */
-const rtlLanguages = new Set(['ar', 'fa', 'he', 'ug', 'ur', 'yi', 'ckb', 'ps', 'sd']);
+const localeLoaders: Record<
+  Exclude<SupportedLocale, 'en'>,
+  () => Promise<{ default: TranslationResource }>
+> = {
+  ar: () => import('./ar/translation.json'),
+  bo: () => import('./bo/translation.json'),
+  bs: () => import('./bs/translation.json'),
+  ca: () => import('./ca/translation.json'),
+  cs: () => import('./cs/translation.json'),
+  da: () => import('./da/translation.json'),
+  de: () => import('./de/translation.json'),
+  es: () => import('./es/translation.json'),
+  et: () => import('./et/translation.json'),
+  fa: () => import('./fa/translation.json'),
+  fi: () => import('./fi/translation.json'),
+  fr: () => import('./fr/translation.json'),
+  he: () => import('./he/translation.json'),
+  hu: () => import('./hu/translation.json'),
+  hy: () => import('./hy/translation.json'),
+  id: () => import('./id/translation.json'),
+  is: () => import('./is/translation.json'),
+  it: () => import('./it/translation.json'),
+  ja: () => import('./ja/translation.json'),
+  ka: () => import('./ka/translation.json'),
+  ko: () => import('./ko/translation.json'),
+  lt: () => import('./lt/translation.json'),
+  lv: () => import('./lv/translation.json'),
+  nb: () => import('./nb/translation.json'),
+  nl: () => import('./nl/translation.json'),
+  nn: () => import('./nn/translation.json'),
+  pl: () => import('./pl/translation.json'),
+  'pt-BR': () => import('./pt-BR/translation.json'),
+  'pt-PT': () => import('./pt-PT/translation.json'),
+  ru: () => import('./ru/translation.json'),
+  sk: () => import('./sk/translation.json'),
+  sl: () => import('./sl/translation.json'),
+  sv: () => import('./sv/translation.json'),
+  th: () => import('./th/translation.json'),
+  tr: () => import('./tr/translation.json'),
+  ug: () => import('./ug/translation.json'),
+  uk: () => import('./uk/translation.json'),
+  vi: () => import('./vi/translation.json'),
+  'zh-Hans': () => import('./zh-Hans/translation.json'),
+  'zh-Hant': () => import('./zh-Hant/translation.json'),
+};
 
-/** True when a (possibly region-suffixed) language code is right-to-left, e.g. `he-IL`. */
-export const isRTLLang = (lng?: string) =>
-  rtlLanguages.has((lng ?? '').toLowerCase().split('-')[0] ?? '');
+const localeByLowercase = supportedLocales.reduce<Record<string, SupportedLocale>>(
+  (acc, locale) => {
+    acc[locale.toLowerCase()] = locale;
+    return acc;
+  },
+  {},
+);
 
-/**
- * Sync `<html dir>` and `<html lang>` to the active language, so the whole UI flips
- * for RTL locales and assistive tech announces the right language.
- *
- * `lang` matters as much as `dir`: index.html hardcodes `lang="en-US"` and upstream
- * only refreshes it from the Settings tab and the share view — neither of which runs
- * on the auth screens. Left alone, a screen reader reads Hebrew with an English voice.
- * This runs on every `languageChanged`, so it is the one place that covers all paths.
- */
-const applyDocumentLanguage = (lng?: string) => {
+const localeAliases: Record<string, SupportedLocale> = {
+  'ar-eg': 'ar',
+  'ca-es': 'ca',
+  'cs-cz': 'cs',
+  'da-dk': 'da',
+  'de-de': 'de',
+  'en-us': 'en',
+  'es-es': 'es',
+  'et-ee': 'et',
+  'fa-ir': 'fa',
+  'fi-fi': 'fi',
+  'fr-fr': 'fr',
+  'he-he': 'he',
+  'he-il': 'he',
+  'hu-hu': 'hu',
+  'hy-am': 'hy',
+  'id-id': 'id',
+  'it-it': 'it',
+  'ja-jp': 'ja',
+  'ka-ge': 'ka',
+  'ko-kr': 'ko',
+  'lt-lt': 'lt',
+  'lv-lv': 'lv',
+  'nl-nl': 'nl',
+  'pl-pl': 'pl',
+  pt: 'pt-PT',
+  'ru-ru': 'ru',
+  'sv-se': 'sv',
+  'th-th': 'th',
+  'tr-tr': 'tr',
+  'uk-ua': 'uk',
+  'vi-vn': 'vi',
+  zh: 'zh-Hans',
+  'zh-cn': 'zh-Hans',
+  'zh-sg': 'zh-Hans',
+  'zh-tw': 'zh-Hant',
+  'zh-hk': 'zh-Hant',
+  'zh-mo': 'zh-Hant',
+};
+
+const loadedLocales = new Set<SupportedLocale>(['en']);
+const loadingLocales: Partial<Record<SupportedLocale, Promise<SupportedLocale>>> = {};
+let languageRequestId = 0;
+let latestRequestedLocale: SupportedLocale = 'en';
+
+function readCookie(name: string) {
+  if (typeof document === 'undefined') {
+    return undefined;
+  }
+
+  const prefix = `${name}=`;
+  return document.cookie
+    .split(';')
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith(prefix))
+    ?.slice(prefix.length);
+}
+
+function readStoredLanguage() {
+  if (typeof localStorage === 'undefined') {
+    return undefined;
+  }
+
+  const raw = localStorage.getItem('lang');
+  if (!raw) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'string' ? parsed : raw;
+  } catch {
+    return raw;
+  }
+}
+
+function getNavigatorLanguage() {
+  if (typeof navigator === 'undefined') {
+    return 'en';
+  }
+
+  return navigator.language || navigator.languages?.[0] || 'en';
+}
+
+export function normalizeLocale(locale?: string | null): SupportedLocale {
+  const requested = locale === 'auto' ? getNavigatorLanguage() : locale;
+  if (!requested) {
+    return 'en';
+  }
+
+  const normalized = requested.replace(/_/g, '-').toLowerCase();
+  const exact = localeByLowercase[normalized];
+  if (exact) {
+    return exact;
+  }
+
+  const alias = localeAliases[normalized];
+  if (alias) {
+    return alias;
+  }
+
+  const base = normalized.split('-')[0];
+  return localeByLowercase[base] ?? localeAliases[base] ?? 'en';
+}
+
+export function detectInitialLanguage() {
+  // Open Brain: Hebrew-first. Only explicit choices (a `lang` cookie or a value
+  // persisted from Settings) win; a first-time visitor with neither resolves to
+  // Hebrew rather than inheriting the browser's `navigator.language`.
+  const cookieLang = readCookie('lang');
+  const storedLang = readStoredLanguage();
+  return normalizeLocale(cookieLang || storedLang || 'he');
+}
+
+export async function ensureLocale(locale?: string | null): Promise<SupportedLocale> {
+  const normalized = normalizeLocale(locale);
+
+  if (normalized === 'en') {
+    return normalized;
+  }
+
+  if (loadedLocales.has(normalized)) {
+    return normalized;
+  }
+
+  if (i18n.hasResourceBundle(normalized, defaultNS)) {
+    loadedLocales.add(normalized);
+    return normalized;
+  }
+
+  if (!loadingLocales[normalized]) {
+    const loader = localeLoaders[normalized];
+    loadingLocales[normalized] = loader()
+      .then((module) => {
+        i18n.addResourceBundle(normalized, defaultNS, module.default, true, true);
+        loadedLocales.add(normalized);
+        return normalized;
+      })
+      .catch((error): SupportedLocale => {
+        console.error(`[i18n] Failed to load locale "${normalized}"`, error);
+        return 'en';
+      })
+      .finally(() => {
+        delete loadingLocales[normalized];
+      });
+  }
+
+  return loadingLocales[normalized] ?? Promise.resolve('en');
+}
+
+export function __setLocaleLoaderForTests(
+  locale: Exclude<SupportedLocale, 'en'>,
+  loader: () => Promise<{ default: TranslationResource }>,
+) {
+  const previousLoader = localeLoaders[locale];
+  localeLoaders[locale] = loader;
+  return () => {
+    localeLoaders[locale] = previousLoader;
+  };
+}
+
+export function __resetLocaleForTests(locale: Exclude<SupportedLocale, 'en'>) {
+  delete loadingLocales[locale];
+  loadedLocales.delete(locale);
+  if (i18n.hasResourceBundle(locale, defaultNS)) {
+    i18n.removeResourceBundle(locale, defaultNS);
+  }
+}
+
+export function syncDocumentLanguage(locale: SupportedLocale) {
   if (typeof document === 'undefined') {
     return;
   }
-  document.documentElement.dir = isRTLLang(lng) ? 'rtl' : 'ltr';
-  if (lng != null && lng !== '') {
-    document.documentElement.lang = lng;
+
+  document.documentElement.lang = locale;
+  document.documentElement.dir = i18n.dir(locale);
+}
+
+export const i18nInitPromise = i18n.use(initReactI18next).init({
+  lng: 'en',
+  fallbackLng: {
+    'zh-TW': ['zh-Hant', 'en'],
+    'zh-HK': ['zh-Hant', 'en'],
+    zh: ['zh-Hans', 'en'],
+    // he first, en behind it: Hebrew is ~70% complete upstream, so an
+    // untranslated key still renders English rather than its raw key name.
+    default: ['he', 'en'],
+  },
+  fallbackNS: defaultNS,
+  ns: [defaultNS],
+  debug: false,
+  defaultNS,
+  resources,
+  supportedLngs: [...supportedLocales],
+  partialBundledLanguages: true,
+  load: 'currentOnly',
+  react: { useSuspense: false },
+  interpolation: { escapeValue: false },
+});
+
+export async function changeLanguageSafely(locale?: string | null) {
+  const requestId = ++languageRequestId;
+  const requestedLocale = normalizeLocale(locale);
+  latestRequestedLocale = requestedLocale;
+  await i18nInitPromise;
+
+  const loadedLocale = await ensureLocale(requestedLocale);
+  if (requestId !== languageRequestId) {
+    return i18n.language;
   }
-};
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    // Open Brain: Hebrew-first. The detector's implicit sources (navigator,
-    // htmlTag, path, subdomain) are dropped so a first-time visitor resolves to
-    // nothing and lands on the `default` fallback below — Hebrew — instead of
-    // inheriting the browser's locale. The explicit sources are kept and cached,
-    // so a language picked in Settings persists and still wins on the next boot.
-    detection: {
-      order: ['querystring', 'cookie', 'localStorage', 'sessionStorage'],
-      caches: ['localStorage'],
-    },
-    fallbackLng: {
-      'zh-TW': ['zh-Hant', 'en'],
-      'zh-HK': ['zh-Hant', 'en'],
-      zh: ['zh-Hans', 'en'],
-      // he first, en behind it: Hebrew is ~70% complete upstream, so an
-      // untranslated key still renders English rather than its raw key name.
-      default: ['he', 'en'],
-    },
-    fallbackNS: 'translation',
-    ns: ['translation'],
-    debug: false,
-    defaultNS,
-    resources,
-    interpolation: { escapeValue: false },
-  });
+  await i18n.changeLanguage(loadedLocale);
+  if (requestId !== languageRequestId) {
+    const latestLocale = await ensureLocale(latestRequestedLocale);
+    await i18n.changeLanguage(latestLocale);
+    syncDocumentLanguage(latestLocale);
+    return i18n.language;
+  }
 
-applyDocumentLanguage(i18n.language);
-i18n.on('languageChanged', applyDocumentLanguage);
+  syncDocumentLanguage(loadedLocale);
+  return loadedLocale;
+}
+
+export async function initializeI18n() {
+  const initialLanguage = detectInitialLanguage();
+  await changeLanguageSafely(initialLanguage);
+  return initialLanguage;
+}
 
 export default i18n;

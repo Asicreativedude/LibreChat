@@ -66,7 +66,12 @@ export interface AdminUsersDeps {
   sendEmail: (params: InviteEmailParams) => Promise<unknown>;
 }
 
-export function createAdminUsersHandlers(deps: AdminUsersDeps) {
+export function createAdminUsersHandlers(deps: AdminUsersDeps): {
+  listUsers: (req: ServerRequest, res: Response) => Promise<Response>;
+  searchUsers: (req: ServerRequest, res: Response) => Promise<Response>;
+  deleteUser: (req: ServerRequest, res: Response) => Promise<Response>;
+  inviteUser: (req: ServerRequest, res: Response) => Promise<Response>;
+} {
   const {
     findUsers,
     countUsers,
