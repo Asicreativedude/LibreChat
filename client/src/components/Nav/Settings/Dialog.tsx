@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as Tabs from '@radix-ui/react-tabs';
 import { X, ChevronLeft } from 'lucide-react';
 import { useMediaQuery } from '@librechat/client';
@@ -15,6 +16,7 @@ import { cn } from '~/utils';
 
 export default function SettingsDialog({ open, onOpenChange }: TDialogProps) {
   const localize = useLocalize();
+  const { i18n } = useTranslation();
   const ctx = useSettingsContext();
   const isSmallScreen = useMediaQuery('(max-width: 767px)');
   const [activeTab, setActiveTab] = useState<SettingsTab>(SettingsTabValues.GENERAL);
@@ -101,6 +103,9 @@ export default function SettingsDialog({ open, onOpenChange }: TDialogProps) {
                 value={effectiveTab}
                 onValueChange={(v) => setActiveTab(v as SettingsTab)}
                 orientation="vertical"
+                // Radix stamps dir="ltr" on its root when no direction is provided,
+                // un-mirroring the whole dialog body under the app's <html dir="rtl">.
+                dir={i18n.dir()}
                 className="flex flex-1 flex-col gap-4 overflow-hidden p-5 md:flex-row md:gap-6"
               >
                 {showSidebar && (

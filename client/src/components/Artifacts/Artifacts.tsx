@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import copy from 'copy-to-clipboard';
+import { useTranslation } from 'react-i18next';
 import * as Tabs from '@radix-ui/react-tabs';
 import { Code, Play, RefreshCw, X } from 'lucide-react';
 import { useSetRecoilState, useResetRecoilState } from 'recoil';
@@ -22,6 +23,7 @@ const MAX_BACKDROP_OPACITY = 0.3;
 
 export default function Artifacts() {
   const localize = useLocalize();
+  const { i18n } = useTranslation();
   const { isMutating } = useMutationState();
   const { isSharedConvo } = useShareContext();
   const isMobile = useMediaQuery('(max-width: 868px)');
@@ -206,8 +208,10 @@ export default function Artifacts() {
       ? (Math.min(blurAmount, MAX_BLUR_AMOUNT) / MAX_BLUR_AMOUNT) * MAX_BACKDROP_OPACITY
       : 0;
 
+  // Radix stamps dir="ltr" when no direction is provided, un-mirroring the
+  // panel under the app's <html dir="rtl"> (same fix as Settings Dialog.tsx).
   return (
-    <Tabs.Root value={displayedTab} onValueChange={setActiveTab} asChild>
+    <Tabs.Root value={displayedTab} onValueChange={setActiveTab} dir={i18n.dir()} asChild>
       <div className="flex h-full w-full flex-col">
         {/* Mobile backdrop with dynamic blur */}
         {isMobile && (
