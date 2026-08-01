@@ -1,3 +1,5 @@
+import { JSX } from 'react/jsx-runtime';
+
 // Open Brain: the studio "O" mark. Replaces OpenAI's GPTIcon flower wherever the
 // openAI endpoint icon renders (client/src/hooks/Endpoint/Icons.tsx) so the shell
 // never shows another vendor's logo. currentColor so it inherits light/dark like
@@ -9,7 +11,7 @@ export default function OpenIcon({
 }: {
   size?: number;
   className?: string;
-}) {
+}): JSX.Element {
   return (
     <svg
       width={size}
