@@ -133,12 +133,23 @@ export function omitsThinkingByDefault(model: string): boolean {
   if (opus && (opus.major > 4 || (opus.major === 4 && opus.minor >= 7))) {
     return true;
   }
+  // Sonnet 5 also returns signed, text-less thinking blocks without the
+  // `display: 'summarized'` opt-in; replaying those on tool-use turns 400s.
+  // Cherry-picked from upstream #14042 (post-v0.8.7); merges away on rebase.
+  const sonnet = parseSonnetVersion(model);
+  if (sonnet != null && sonnet.major >= 5) {
+    return true;
+  }
   return false;
 }
 
 export function omitsSamplingParameters(model: string): boolean {
   const opus = parseOpusVersion(model);
   if (opus && (opus.major > 4 || (opus.major === 4 && opus.minor >= 7))) {
+    return true;
+  }
+  const sonnet = parseSonnetVersion(model);
+  if (sonnet != null && sonnet.major >= 5) {
     return true;
   }
   return false;
