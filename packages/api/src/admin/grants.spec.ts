@@ -900,7 +900,9 @@ describe('createAdminGrantsHandlers', () => {
 
     it('assigns a grant to a user principal, gated by MANAGE_USERS', async () => {
       const grant = mockGrant({ principalType: PrincipalType.USER, principalId: validObjectId });
-      const deps = createDeps({ grantCapability: jest.fn().mockResolvedValue(grant) });
+      const deps = createDeps({
+        grantCapability: jest.fn().mockResolvedValue({ grant, created: true }),
+      });
       const handlers = createAdminGrantsHandlers(deps);
       const { req, res, status, json } = createReqRes({
         body: {
