@@ -2473,6 +2473,94 @@ describe('Claude Model Tests', () => {
       cacheTokenValues['claude-mythos-5'].read,
     );
   });
+
+  it('should return correct prompt and completion rates for Claude Sonnet 5', () => {
+    expect(getMultiplier({ model: 'claude-sonnet-5', tokenType: 'prompt' })).toBe(
+      tokenValues['claude-sonnet-5'].prompt,
+    );
+    expect(getMultiplier({ model: 'claude-sonnet-5', tokenType: 'completion' })).toBe(
+      tokenValues['claude-sonnet-5'].completion,
+    );
+  });
+
+  it('should pin Claude Sonnet 5 pricing to $3 / $15 per MTok', () => {
+    expect(tokenValues['claude-sonnet-5']).toEqual({ prompt: 3, completion: 15 });
+  });
+
+  it('should handle Claude Sonnet 5 model name variations', () => {
+    const modelVariations = [
+      'claude-sonnet-5',
+      'claude-sonnet-5-20260609',
+      'claude-sonnet-5-latest',
+      'anthropic/claude-sonnet-5',
+      'claude-sonnet-5/anthropic',
+      'anthropic.claude-sonnet-5',
+    ];
+
+    modelVariations.forEach((model) => {
+      const valueKey = getValueKey(model);
+      expect(valueKey).toBe('claude-sonnet-5');
+      expect(getMultiplier({ model, tokenType: 'prompt' })).toBe(
+        tokenValues['claude-sonnet-5'].prompt,
+      );
+      expect(getMultiplier({ model, tokenType: 'completion' })).toBe(
+        tokenValues['claude-sonnet-5'].completion,
+      );
+    });
+  });
+
+  it('should return correct cache rates for Claude Sonnet 5', () => {
+    expect(getCacheMultiplier({ model: 'claude-sonnet-5', cacheType: 'write' })).toBe(
+      cacheTokenValues['claude-sonnet-5'].write,
+    );
+    expect(getCacheMultiplier({ model: 'claude-sonnet-5', cacheType: 'read' })).toBe(
+      cacheTokenValues['claude-sonnet-5'].read,
+    );
+  });
+
+  it('should return correct prompt and completion rates for Claude Opus 5', () => {
+    expect(getMultiplier({ model: 'claude-opus-5', tokenType: 'prompt' })).toBe(
+      tokenValues['claude-opus-5'].prompt,
+    );
+    expect(getMultiplier({ model: 'claude-opus-5', tokenType: 'completion' })).toBe(
+      tokenValues['claude-opus-5'].completion,
+    );
+  });
+
+  it('should pin Claude Opus 5 pricing to $5 / $25 per MTok', () => {
+    expect(tokenValues['claude-opus-5']).toEqual({ prompt: 5, completion: 25 });
+  });
+
+  it('should handle Claude Opus 5 model name variations', () => {
+    const modelVariations = [
+      'claude-opus-5',
+      'claude-opus-5-20260609',
+      'claude-opus-5-latest',
+      'anthropic/claude-opus-5',
+      'claude-opus-5/anthropic',
+      'anthropic.claude-opus-5',
+    ];
+
+    modelVariations.forEach((model) => {
+      const valueKey = getValueKey(model);
+      expect(valueKey).toBe('claude-opus-5');
+      expect(getMultiplier({ model, tokenType: 'prompt' })).toBe(
+        tokenValues['claude-opus-5'].prompt,
+      );
+      expect(getMultiplier({ model, tokenType: 'completion' })).toBe(
+        tokenValues['claude-opus-5'].completion,
+      );
+    });
+  });
+
+  it('should return correct cache rates for Claude Opus 5', () => {
+    expect(getCacheMultiplier({ model: 'claude-opus-5', cacheType: 'write' })).toBe(
+      cacheTokenValues['claude-opus-5'].write,
+    );
+    expect(getCacheMultiplier({ model: 'claude-opus-5', cacheType: 'read' })).toBe(
+      cacheTokenValues['claude-opus-5'].read,
+    );
+  });
 });
 
 describe('Premium Token Pricing', () => {
