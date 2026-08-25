@@ -1,0 +1,143 @@
+name: Open Brain upstream sync
+
+# Daily poll of danny-avila/LibreChat for new stable release tags.
+# Clean merge -> sync PR into open-brain. Conflicts -> issue with the file list.
+# Runbook: docs/agents/librechat-fork.md in Asicreativedude/open-brain.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # Optional fine-grained PAT with issues:write on Asicreativedude/open-brain.
+      # When set, conflict issues land in the open-brain tracker (triage flow);
+      # otherwise they fall back to this repo's issues.
+      OPEN_BRAIN_TOKEN: ${{ secrets.OPEN_BRAIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: open-brain
+          fetch-depth: 0
+
+      - name: Find latest stable upstream tag
+        id: tag
+        run: |
+          git remote add upstream https://github.com/danny-avila/LibreChat.git
+          git fetch upstream --tags --quiet
+          TAG=$(git tag -l 'v*' | grep -xE 'v[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -1)
+          if [ -z "$TAG" ]; then echo "no stable tag found"; exit 1; fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if git merge-base --is-ancestor "$TAG" HEAD; then
+            echo "Already synced to $TAG — nothing to do."
+            echo "done=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve issue tracker repo
+        if: steps.tag.outputs.done != 'true'
+        id: tracker
+        run: |
+          if [ -n "$OPEN_BRAIN_TOKEN" ]; then
+            echo "repo=Asicreativedude/open-brain" >> "$GITHUB_OUTPUT"
+          else
+            echo "repo=$GITHUB_REPOSITORY" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip if a PR or conflict issue for this tag already exists
+        if: steps.tag.outputs.done != 'true'
+        id: dedupe
+        run: |
+          TAG='${{ steps.tag.outputs.tag }}'
+          PRS=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "sync/upstream-$TAG" --state all --json number --jq length)
+          ISSUES=$(GH_TOKEN="${OPEN_BRAIN_TOKEN:-$GH_TOKEN}" gh issue list \
+            --repo '${{ steps.tracker.outputs.repo }}' \
+            --search "\"upstream $TAG\" in:title" --state all --json number --jq length)
+          if [ "$PRS" != "0" ] || [ "$ISSUES" != "0" ]; then
+            echo "Already handled: $PRS PR(s), $ISSUES issue(s) for $TAG."
+            echo "done=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Attempt merge
+        if: steps.tag.outputs.done != 'true' && steps.dedupe.outputs.done != 'true'
+        id: merge
+        run: |
+          TAG='${{ steps.tag.outputs.tag }}'
+          BRANCH="sync/upstream-$TAG"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          if git merge --no-ff "$TAG" -m "Merge upstream $TAG into open-brain"; then
+            echo "clean=true" >> "$GITHUB_OUTPUT"
+            git push origin "$BRANCH"
+          else
+            git diff --name-only --diff-filter=U > /tmp/conflicts.txt
+            git merge --abort
+            echo "clean=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Node
+        if: steps.merge.outputs.clean == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.16.0'
+
+      - name: Build client (clean merge only)
+        if: steps.merge.outputs.clean == 'true'
+        id: build
+        continue-on-error: true
+        run: |
+          npm ci
+          npm run frontend
+
+      - name: Open sync PR
+        if: steps.merge.outputs.clean == 'true'
+        run: |
+          TAG='${{ steps.tag.outputs.tag }}'
+          if [ '${{ steps.build.outcome }}' = 'success' ]; then
+            BUILD_LINE="✅ Client build (\`npm run frontend\`) passed in this run."
+          else
+            BUILD_LINE="❌ Client build FAILED in this run — see the workflow logs. Fix on this branch before merging."
+          fi
+          gh pr create --repo "$GITHUB_REPOSITORY" \
+            --base open-brain --head "sync/upstream-$TAG" \
+            --title "Sync upstream $TAG into open-brain" \
+            --body "Automated merge of upstream tag \`$TAG\`. Merged clean (no conflicts).
+
+          $BUILD_LINE
+
+          Note: pushes made by this bot don't trigger the PR client-build workflow; any human push to this branch will.
+
+          Checklist before merging:
+          - [ ] Read the upstream release notes for $TAG
+          - [ ] Client build green (inline result above, or re-run after fixes)
+          - [ ] RTL spot-check against \`infra/librechat/rtl-baseline\` (Hebrew default, spec §14)
+          - [ ] Local verify: \`npm run build:client\`, then \`pnpm stack build librechat\` in the superproject
+
+          After merging:
+          - [ ] Bump the submodule pointer in \`Asicreativedude/open-brain\` (own commit), per \`docs/agents/librechat-fork.md\`"
+
+      - name: Open conflict issue
+        if: steps.merge.outputs.clean == 'false'
+        run: |
+          TAG='${{ steps.tag.outputs.tag }}'
+          BODY="Automated merge of upstream tag \`$TAG\` into \`open-brain\` hit conflicts. Manual sync needed — see the upstream-sync runbook in \`docs/agents/librechat-fork.md\`.
+
+          Conflicting files:
+          \`\`\`
+          $(cat /tmp/conflicts.txt)
+          \`\`\`
+
+          Repo: $GITHUB_REPOSITORY, base: \`open-brain\`, tag: \`$TAG\`."
+          GH_TOKEN="${OPEN_BRAIN_TOKEN:-$GH_TOKEN}" gh issue create \
+            --repo '${{ steps.tracker.outputs.repo }}' \
+            --title "LibreChat upstream $TAG: merge conflicts — manual sync needed" \
+            --body "$BODY"
